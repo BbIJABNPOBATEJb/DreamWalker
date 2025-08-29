@@ -33,6 +33,7 @@ public class EffectsCommand extends CommandBase {
     public int getRequiredPermissionLevel() {
         return 0;
     }
+
     @Override
     public String getCommandUsage(ICommandSender sender) {
         if (sender.canCommandSenderUseCommand(4, "")) {
@@ -50,7 +51,6 @@ public class EffectsCommand extends CommandBase {
             showSelfEffects(sender);
             return;
         }
-
 
 
         if (!sender.canCommandSenderUseCommand(4, "")) {
