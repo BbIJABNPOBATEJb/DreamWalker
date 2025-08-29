@@ -1,11 +1,9 @@
 package me.bbijabnpobatejb.dreamwalker.alias;
 
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
 import lombok.experimental.UtilityClass;
 import lombok.val;
 import me.bbijabnpobatejb.dreamwalker.DreamWalker;
-import me.bbijabnpobatejb.dreamwalker.config.object.SimpleConfig;
+import me.bbijabnpobatejb.dreamwalker.config.model.SimpleConfig;
 import me.bbijabnpobatejb.dreamwalker.packet.ClientMessagePacket;
 import me.bbijabnpobatejb.dreamwalker.side.CommonProxy;
 import me.bbijabnpobatejb.dreamwalker.util.Chat;
@@ -16,11 +14,10 @@ import net.minecraft.entity.player.EntityPlayerMP;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
-import static me.bbijabnpobatejb.dreamwalker.alias.DreamAliasCommand.DREAMALIAS;
+import static me.bbijabnpobatejb.dreamwalker.alias.RunAliasCommand.DREAM_ALIAS_COMMAND;
 import static me.bbijabnpobatejb.dreamwalker.side.ClientProxy.config;
 
 
@@ -28,7 +25,6 @@ import static me.bbijabnpobatejb.dreamwalker.side.ClientProxy.config;
 public class AliasHandler {
 
 
-    @SideOnly(Side.CLIENT)
     public boolean containsAlias(SimpleConfig config, String message) {
         String msg = message.trim();
 
@@ -42,7 +38,6 @@ public class AliasHandler {
         return msg.startsWith(config.getAliasPrefix());
     }
 
-    @SideOnly(Side.SERVER)
     public String subStingWithoutAlias(SimpleConfig config, String message) {
         String prefix = config.getAliasPrefix();
         int index = message.indexOf(prefix);
@@ -50,12 +45,11 @@ public class AliasHandler {
         if (index == -1) return message;
         return message.substring(index + prefix.length());
     }
-    @SideOnly(Side.CLIENT)
     public boolean handleSubmitChatMessage(String rawMessage) {
         val b = containsAlias(config, rawMessage);
 
         if (b) {
-            val command = "/" + DREAMALIAS + " " + rawMessage;
+            val command = "/" + DREAM_ALIAS_COMMAND + " " + rawMessage;
             DreamWalker.getLogger().info("alias command {}", command);
             val mc = Minecraft.getMinecraft();
             mc.ingameGUI.getChatGUI().addToSentMessages(rawMessage);
@@ -65,27 +59,21 @@ public class AliasHandler {
         return b;
     }
 
-    @SideOnly(Side.SERVER)
     public void sendMessageAtPlayer(EntityPlayerMP player, String message) {
         DreamWalker.NETWORK.sendTo(new ClientMessagePacket(message), player);
     }
 
-    @SideOnly(Side.CLIENT)
     public void handleClientMessagePacket(String message) {
         val mc = Minecraft.getMinecraft();
         DreamWalker.getLogger().info("handlerClientMessagePacket {}", message);
         mc.thePlayer.sendChatMessage(message);
     }
 
-    @SideOnly(Side.SERVER)
-    public String listUsageAlias(Map<String, List<Alias>> playersAlias, String targetName, List<Alias> allAlias) {
-        val list = playersAlias.getOrDefault(targetName, new ArrayList<>()).stream().map(Alias::getAlias).collect(Collectors.toList());
+    public String listUsageAlias(List<Alias> allAlias) {
         val allAliasString = allAlias.stream().map(Alias::getAlias).collect(Collectors.toList());
-        list.addAll(allAliasString);
-        return "§cСписок доступных вам алиасов: " + String.join(", ", list);
+        return "§cСписок доступных вам алиасов: " + String.join(", ", allAliasString);
     }
 
-    @SideOnly(Side.SERVER)
     public void foundAlias(ICommandSender sender, List<Alias> aliases, String subStingWithoutAlias, AtomicBoolean foundAlias, boolean help, EntityPlayerMP target, String[] args) {
         for (Alias alias : aliases) {
             if (!alias.getAlias().equalsIgnoreCase(subStingWithoutAlias)) continue;
@@ -95,7 +83,6 @@ public class AliasHandler {
         }
     }
 
-    @SideOnly(Side.SERVER)
     public void runAliasCommand(ICommandSender sender, Alias alias, boolean help, EntityPlayerMP target, String[] args) {
         if (help) {
             val message = alias.getDisplayName() + " " + alias.getDescription() + " " + alias.getAlias();

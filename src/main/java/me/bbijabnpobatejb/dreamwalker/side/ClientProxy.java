@@ -3,10 +3,11 @@ package me.bbijabnpobatejb.dreamwalker.side;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
-import me.bbijabnpobatejb.dreamwalker.config.object.SimpleConfig;
+import me.bbijabnpobatejb.dreamwalker.config.model.SimpleConfig;
 
 public class ClientProxy extends CommonProxy {
 
+    public static boolean clientIsAdmin = false;
     public static SimpleConfig config = new SimpleConfig();
 
     @Override

@@ -17,7 +17,7 @@ import me.bbijabnpobatejb.dreamwalker.side.ClientProxy;
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ClientConfigPacket implements IMessage {
-
+    boolean clientIsAdmin;
     String aliasPrefix;
     String argsHolder;
     String rollPrefix;
@@ -27,6 +27,7 @@ public class ClientConfigPacket implements IMessage {
 
     @Override
     public void fromBytes(ByteBuf buf) {
+        clientIsAdmin = buf.readBoolean();
         aliasPrefix = ByteBufUtils.readUTF8String(buf);
         argsHolder = ByteBufUtils.readUTF8String(buf);
         rollPrefix = ByteBufUtils.readUTF8String(buf);
@@ -42,6 +43,7 @@ public class ClientConfigPacket implements IMessage {
 
     @Override
     public void toBytes(ByteBuf buf) {
+        buf.writeBoolean(clientIsAdmin);
         ByteBufUtils.writeUTF8String(buf, aliasPrefix);
         ByteBufUtils.writeUTF8String(buf, argsHolder);
         ByteBufUtils.writeUTF8String(buf, rollPrefix);
@@ -58,6 +60,7 @@ public class ClientConfigPacket implements IMessage {
 
         @Override
         public IMessage onMessage(ClientConfigPacket packet, MessageContext ctx) {
+            ClientProxy.clientIsAdmin = packet.clientIsAdmin;
             ClientProxy.config.setAliasPrefix(packet.aliasPrefix);
             ClientProxy.config.setArgsHolder(packet.argsHolder);
             ClientProxy.config.setRollPrefix(packet.rollPrefix);

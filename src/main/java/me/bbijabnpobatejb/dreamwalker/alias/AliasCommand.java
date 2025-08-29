@@ -1,0 +1,301 @@
+package me.bbijabnpobatejb.dreamwalker.alias;
+
+import lombok.val;
+import me.bbijabnpobatejb.dreamwalker.DreamWalker;
+import me.bbijabnpobatejb.dreamwalker.config.JsonFile;
+import me.bbijabnpobatejb.dreamwalker.config.JsonHandler;
+import me.bbijabnpobatejb.dreamwalker.config.model.GlobalAliasConfig;
+import me.bbijabnpobatejb.dreamwalker.config.model.PlayerAliasConfig;
+import me.bbijabnpobatejb.dreamwalker.util.Chat;
+import net.minecraft.command.CommandBase;
+import net.minecraft.command.ICommandSender;
+import net.minecraft.command.WrongUsageException;
+import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.server.MinecraftServer;
+
+import java.util.*;
+
+public class AliasCommand extends CommandBase {
+
+    @Override
+    public String getCommandName() {
+        return "alias";
+    }
+
+    @Override
+    public String getCommandUsage(ICommandSender sender) {
+        val isAdmin = sender.canCommandSenderUseCommand(4, "");
+        return isAdmin ? "/alias <?/help/player/global> ..." : "/alias ?";
+    }
+
+    @Override
+    public int getRequiredPermissionLevel() {
+        return 0;
+    }
+
+    @Override
+    public void processCommand(ICommandSender sender, String[] args) {
+        if (args.length == 0) {
+            throw new WrongUsageException(getCommandUsage(sender));
+        } else {
+            String scope = args[0].toLowerCase();
+            if (scope.equalsIgnoreCase("?")) {
+                handleAliasList(sender);
+            }  else if (sender.canCommandSenderUseCommand(4, "")) {
+                handleAdminSender(sender, args, scope);
+            }
+        }
+
+
+    }
+
+    private void handleAdminSender(ICommandSender sender, String[] args, String scope) {
+        if (scope.equalsIgnoreCase("help")) {
+            handleHelp(sender);
+            return;
+        }
+        if (args.length < 2) throw new WrongUsageException(getCommandUsage(sender));
+
+        JsonHandler config = DreamWalker.getInstance().getConfig();
+
+        if (scope.equalsIgnoreCase("player")) {
+            handlePlayerAlias(sender, args, config);
+        } else if (scope.equalsIgnoreCase("global")) {
+            handleGlobalAlias(sender, args, config);
+        } else {
+            throw new WrongUsageException(getCommandUsage(sender));
+        }
+    }
+
+    private void handleAliasList(ICommandSender sender) {
+        if (!(sender instanceof EntityPlayerMP)) {
+            Chat.sendChat(sender, "&cOnly for players");
+            return;
+        }
+        val player = (EntityPlayerMP) sender;
+        val config = DreamWalker.getInstance().getConfig();
+
+        Chat.sendChat(player, "&bСписок доступных вам алиасов: ");
+        val globalAlias = config.getGlobalAliasConfig().getData().getGlobalAlias();
+        val map = config.getPlayersAliasConfig();
+        val playerName = player.getCommandSenderName();
+
+        sendPlayerAlias(globalAlias, player, " &7Глобальные:");
+        if (map.containsKey(playerName)) {
+            val playerAlias = map.get(playerName).getData().getAliases();
+            sendPlayerAlias(playerAlias, player, " &7Личные:");
+        }
+    }
+
+    void sendPlayerAlias(List<Alias> list, EntityPlayerMP player, String notEmpty) {
+        if (!list.isEmpty()) {
+            Chat.sendMessage(player, notEmpty);
+        }
+        for (Alias alias : list) {
+            Chat.sendMessage(player, alias.playerToString());
+        }
+    }
+
+    private void handleHelp(ICommandSender sender) {
+        Chat.sendChat(sender, "&e[Alias System — команды администратора]");
+        Chat.sendMessage(sender, "&a/alias ? — список доступных вам алиасов");
+        Chat.sendMessage(sender, "&a/alias player <ник> list");
+        Chat.sendMessage(sender, "&a/alias player <ник> add <алиас> <название через _> <описание через _> <команды через ;>");
+        Chat.sendMessage(sender, "&a/alias player <ник> remove <алиас>");
+        Chat.sendMessage(sender, "&a/alias global list");
+        Chat.sendMessage(sender, "&a/alias global add <алиас> <название через _> <описание через _> <команды через ;>");
+        Chat.sendMessage(sender, "&a/alias global remove <алиас>");
+    }
+
+    // ---------------- PLAYER ----------------
+
+    private void handlePlayerAlias(ICommandSender sender, String[] args, JsonHandler config) {
+        if (args.length < 3) throw new WrongUsageException("/alias player <ник> <add/remove/list> ...");
+
+        String player = args[1];
+        String action = args[2].toLowerCase();
+
+
+        if (action.equalsIgnoreCase("add")) {
+            if (args.length < 7)
+                throw new WrongUsageException("/alias player <ник> add <алиас> <название через _> <описание через _> <команды через ;>");
+            String aliasName = args[3];
+            String title = args[4];
+            String desc = args[5];
+            String commandMerged = joinArgs(args, 6);
+            List<String> commands = Arrays.asList(commandMerged.split(";"));
+
+            Alias alias = new Alias(aliasName, title, desc, commands);
+            addAliasToPlayer(config, player, alias);
+            Chat.sendChat(sender, "&aАлиас '" + aliasName + "' добавлен для игрока " + player);
+
+        } else if (action.equalsIgnoreCase("remove")) {
+            if (args.length < 4) throw new WrongUsageException("/alias player <ник> remove <алиас>");
+            String alias = args[3];
+            removeAliasFromPlayer(config, player, alias, sender);
+
+        } else if (action.equalsIgnoreCase("list")) {
+            listAliasesOfPlayer(config, player, sender);
+
+        } else {
+            throw new WrongUsageException("/alias player <ник> <add/remove/list>");
+        }
+    }
+
+    private void addAliasToPlayer(JsonHandler config, String playerName, Alias alias) {
+        val map = config.getPlayersAliasConfig();
+        val file = map.getOrDefault(playerName, config.createPlayerAliasJsonFile(playerName, null));
+        val aliases = file.getData().getAliases();
+        val it = aliases.iterator();
+        while (it.hasNext()) {
+            Alias existing = it.next();
+            if (existing.getAlias().equalsIgnoreCase(alias.getAlias())) {
+                it.remove();
+                break;
+            }
+        }
+        aliases.add(alias);
+        file.save();
+        config.loadPlayers();
+    }
+
+    private void removeAliasFromPlayer(JsonHandler config, String player, String alias, ICommandSender sender) {
+        JsonFile<PlayerAliasConfig> file = config.getPlayersAliasConfig().get(player);
+        if (file == null) {
+            Chat.sendChat(sender, "&7У игрока " + player + " нет алиасов");
+            return;
+        }
+
+        boolean removed = file.getData().getAliases().removeIf(a -> a.getAlias().equalsIgnoreCase(alias));
+        if (removed) {
+            file.save();
+            Chat.sendChat(sender, "&bАлиас '" + alias + "' удалён у игрока " + player);
+            config.loadPlayers();
+        } else {
+            Chat.sendChat(sender, "&cАлиас не найден у игрока " + player);
+        }
+    }
+
+    private void listAliasesOfPlayer(JsonHandler config, String player, ICommandSender sender) {
+        JsonFile<PlayerAliasConfig> file = config.getPlayersAliasConfig().get(player);
+        if (file == null || file.getData().getAliases().isEmpty()) {
+            Chat.sendChat(sender, "&7У игрока " + player + " нет алиасов");
+            return;
+        }
+
+        Chat.sendChat(sender, "&aАлиасы игрока " + player + ":");
+        Chat.sendMessage(sender, Alias.example());
+        for (Alias alias : file.getData().getAliases()) {
+            Chat.sendMessage(sender, alias.toString());
+        }
+    }
+
+    // ---------------- GLOBAL ----------------
+
+    private void handleGlobalAlias(ICommandSender sender, String[] args, JsonHandler config) {
+        if (args.length < 2) throw new WrongUsageException("/alias global <add/remove/list> ...");
+
+        String action = args[1].toLowerCase();
+        GlobalAliasConfig global = config.getGlobalAliasConfig().getData();
+
+        if (action.equalsIgnoreCase("add")) {
+            if (args.length < 6)
+                throw new WrongUsageException("/alias global add <алиас> <название через _> <описание через _> <команды через ;>");
+            String aliasName = args[2];
+            String title = args[3];
+            String desc = args[4];
+            String commandMerged = joinArgs(args, 5);
+            List<String> commands = Arrays.asList(commandMerged.split(";"));
+
+            Alias alias = new Alias(aliasName, title, desc, commands);
+            global.getGlobalAlias().removeIf(a -> a.getAlias().equalsIgnoreCase(aliasName));
+            global.getGlobalAlias().add(alias);
+            config.getGlobalAliasConfig().save();
+
+            Chat.sendChat(sender, "&aГлобальный алиас '" + aliasName + "' добавлен");
+
+        } else if (action.equalsIgnoreCase("remove")) {
+            if (args.length < 3) throw new WrongUsageException("/alias global remove <алиас>");
+            String aliasName = args[2];
+            boolean removed = global.getGlobalAlias().removeIf(a -> a.getAlias().equalsIgnoreCase(aliasName));
+            if (removed) {
+                config.getGlobalAliasConfig().save();
+                Chat.sendChat(sender, "&bГлобальный алиас '" + aliasName + "' удалён");
+            } else {
+                Chat.sendChat(sender, "&cГлобальный алиас не найден: " + aliasName);
+            }
+
+        } else if (action.equalsIgnoreCase("list")) {
+            if (global.getGlobalAlias().isEmpty()) {
+                Chat.sendChat(sender, "&7Нет глобальных алиасов");
+                return;
+            }
+
+            Chat.sendChat(sender, "&aСписок глобальных алиасов:");
+            Chat.sendMessage(sender, Alias.example());
+            for (Alias alias : global.getGlobalAlias()) {
+                Chat.sendMessage(sender, alias.toString());
+            }
+
+        } else {
+            throw new WrongUsageException("/alias global <add/remove/list>");
+        }
+    }
+
+    // ---------------- UTILS ----------------
+
+    private String joinArgs(String[] args, int start) {
+        StringBuilder builder = new StringBuilder();
+        for (int i = start; i < args.length; i++) {
+            builder.append(args[i]);
+            if (i != args.length - 1) builder.append(" ");
+        }
+        return builder.toString();
+    }
+
+    @Override
+    public List addTabCompletionOptions(ICommandSender sender, String[] args) {
+        JsonHandler config = DreamWalker.getInstance().getConfig();
+
+        if (args.length == 1) {
+            return getListOfStringsFromIterableMatchingLastWord(args, Arrays.asList("player", "global"));
+        }
+
+        if (args.length == 2 && args[0].equalsIgnoreCase("player")) {
+            return getListOfStringsFromIterableMatchingLastWord(args, Arrays.asList(MinecraftServer.getServer().getAllUsernames()));
+        }
+
+        if (args.length == 3 && args[0].equalsIgnoreCase("player")) {
+            return getListOfStringsFromIterableMatchingLastWord(args, Arrays.asList("add", "remove", "list"));
+        }
+
+        if (args.length == 4 && args[0].equalsIgnoreCase("player") && args[2].equalsIgnoreCase("remove")) {
+            // Подсказываем алиасы игрока
+            String targetPlayer = args[1];
+            JsonFile<PlayerAliasConfig> file = config.getPlayersAliasConfig().get(targetPlayer);
+            if (file != null) {
+                List<String> aliases = new ArrayList<>();
+                for (Alias alias : file.getData().getAliases()) {
+                    aliases.add(alias.getAlias());
+                }
+                return getListOfStringsFromIterableMatchingLastWord(args, aliases);
+            }
+        }
+
+        if (args.length == 2 && args[0].equalsIgnoreCase("global")) {
+            return getListOfStringsFromIterableMatchingLastWord(args, Arrays.asList("add", "remove", "list"));
+        }
+
+        if (args.length == 3 && args[0].equalsIgnoreCase("global") && args[1].equalsIgnoreCase("remove")) {
+            GlobalAliasConfig global = config.getGlobalAliasConfig().getData();
+            List<String> aliases = new ArrayList<>();
+            for (Alias alias : global.getGlobalAlias()) {
+                aliases.add(alias.getAlias());
+            }
+            return getListOfStringsFromIterableMatchingLastWord(args, aliases);
+        }
+
+        return Collections.emptyList();
+    }
+
+}

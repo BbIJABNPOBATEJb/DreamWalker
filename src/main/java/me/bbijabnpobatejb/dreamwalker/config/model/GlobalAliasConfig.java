@@ -1,4 +1,4 @@
-package me.bbijabnpobatejb.dreamwalker.config.object;
+package me.bbijabnpobatejb.dreamwalker.config.model;
 
 import lombok.AccessLevel;
 import lombok.Data;

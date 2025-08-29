@@ -5,6 +5,8 @@ import cpw.mods.fml.relauncher.SideOnly;
 import lombok.experimental.UtilityClass;
 import lombok.val;
 import me.bbijabnpobatejb.dreamwalker.DreamWalker;
+import me.bbijabnpobatejb.dreamwalker.side.ClientProxy;
+import me.bbijabnpobatejb.dreamwalker.util.Chat;
 import me.bbijabnpobatejb.dreamwalker.util.StringUtil;
 import net.minecraft.client.Minecraft;
 
@@ -15,7 +17,6 @@ import static me.bbijabnpobatejb.dreamwalker.side.ClientProxy.config;
 @UtilityClass
 public class RollHandler {
 
-    @SideOnly(Side.CLIENT)
     public boolean handleSubmitChatMessage(String rawMessage) {
         String msg = rawMessage.trim();
 
@@ -35,7 +36,8 @@ public class RollHandler {
 
         int overrideTotal = -1;
         val mc = Minecraft.getMinecraft();
-        if (mc.thePlayer.canCommandSenderUseCommand(4, "") && msg.matches("^\\d+%.*")) {
+        val isAdmin = ClientProxy.clientIsAdmin;
+        if (isAdmin && msg.matches("^\\d+%.*")) {
             int secondPercentIndex = msg.indexOf("%");
             if (secondPercentIndex > 0) {
                 try {

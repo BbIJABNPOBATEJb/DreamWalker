@@ -2,7 +2,7 @@
   {
     "modid": "${modid}",
     "name": "${modname}",
-    "description": "Dream Walker description",
+    "description": "DreamWalker - Advanced Chat and Alias Mod.\n\nFor players:\n - Use commands via /alias or ;<alias>\n - Use /alias ? to see all available aliases\n - Use ;<alias> to execute\n - Use ;<alias> ? to view info\n\nAdmin commands:\n - /alias help to view documentation\n - /alias player <name> list\n - /alias player <name> add <alias> <title_with_underscores> <desc_with_underscores> <commands_separated_by_;>\n - /alias player <name> remove <alias>\n - /alias global add/remove/list\n\nAdditional:\n - /effects to see your current effects\n - /effects <name> to view effect description\n - /effects <player> <name> <description> to add effect by admin\n - /effects remove <player> <name>\n - /effects list <player>",
     "version": "${version}",
     "mcversion": "${mcversion}",
     "url": "",

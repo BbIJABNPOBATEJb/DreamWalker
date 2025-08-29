@@ -3,6 +3,7 @@ package me.bbijabnpobatejb.dreamwalker.util;
 import lombok.experimental.UtilityClass;
 import lombok.val;
 import me.bbijabnpobatejb.dreamwalker.DreamWalker;
+import me.bbijabnpobatejb.dreamwalker.side.CommonProxy;
 import net.minecraft.client.Minecraft;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -12,10 +13,14 @@ import net.minecraft.util.ChatComponentText;
 @UtilityClass
 public class Chat {
 
-    public final String PREFIX = "§3❯❯§r ";
 
     public void sendChat(ICommandSender target, String message) {
-        message = PREFIX + message;
+        message = CommonProxy.getConfig().getChatPrefix() + message;
+        target.addChatMessage(buildMessage(message));
+    }
+
+
+    public void sendMessage(ICommandSender target, String message) {
         target.addChatMessage(buildMessage(message));
     }
 

@@ -56,7 +56,7 @@ public class DreamWalkerCommand extends CommandBase {
             val config = DreamWalker.getInstance().getConfig();
             config.load();
             sendConfigToAllPlayers();
-            Chat.sendChat(sender, "&aКонфиг перезагружен");
+            Chat.sendChat(sender, "&aКонфиг перезагружен. Загружено алиасов игроков " + config.getPlayersAliasConfig().size());
             return;
         } else if (arg.equalsIgnoreCase("test")) {
             Chat.sendChat(sender, TEST_MESSAGE);

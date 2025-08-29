@@ -1,4 +1,4 @@
-package me.bbijabnpobatejb.dreamwalker.config.object;
+package me.bbijabnpobatejb.dreamwalker.config.model;
 
 import lombok.AccessLevel;
 import lombok.Data;
@@ -8,6 +8,7 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class SimpleConfig {
 
+    String chatPrefix = "§3❯❯§r ";
     String aliasPrefix = ";";
     String rollPrefix = "%";
     String argsHolder = "{args}";

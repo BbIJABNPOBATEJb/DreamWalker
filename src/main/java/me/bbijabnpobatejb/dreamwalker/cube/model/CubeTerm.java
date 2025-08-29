@@ -1,4 +1,4 @@
-package me.bbijabnpobatejb.dreamwalker.cube;
+package me.bbijabnpobatejb.dreamwalker.cube.model;
 
 import lombok.AccessLevel;
 import lombok.Getter;

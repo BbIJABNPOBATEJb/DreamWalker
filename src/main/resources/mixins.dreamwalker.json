@@ -4,6 +4,7 @@
   "package": "me.bbijabnpobatejb.dreamwalker.mixin",
   "refmap": "mixins.dreamwalker.refmap.json",
   "mixins": [
+    "C01PacketChatMessageMixin"
   ],
   "client": [
     "GuiChatMixin",

@@ -20,7 +20,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.List;
 
-@SideOnly(Side.CLIENT)
 @Mixin(GuiNewChat.class)
 public abstract class GuiNewChatMixin {
 

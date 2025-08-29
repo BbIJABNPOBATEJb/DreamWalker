@@ -1,6 +1,8 @@
 package me.bbijabnpobatejb.dreamwalker.cube;
 
 import lombok.experimental.UtilityClass;
+import me.bbijabnpobatejb.dreamwalker.cube.model.CubeRoll;
+import me.bbijabnpobatejb.dreamwalker.cube.model.CubeTerm;
 
 import java.util.ArrayList;
 import java.util.List;

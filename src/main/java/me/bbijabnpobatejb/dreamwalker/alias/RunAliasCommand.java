@@ -8,28 +8,30 @@ import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.server.MinecraftServer;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class DreamAliasCommand extends CommandBase {
+public class RunAliasCommand extends CommandBase {
 
-    public static final String DREAMALIAS = "dreamalias";
+    public static final String DREAM_ALIAS_COMMAND = "runalias";
 
     @Override
     public String getCommandName() {
-        return DREAMALIAS;
-    }
-
-    @Override
-    public List<String> getCommandAliases() {
-        return Arrays.asList("da");
+        return DREAM_ALIAS_COMMAND;
     }
 
     @Override
     public boolean canCommandSenderUseCommand(ICommandSender sender) {
         return true;
+    }
+
+    @Override
+    public int getRequiredPermissionLevel() {
+        return 0;
     }
 
     @Override
@@ -39,7 +41,6 @@ public class DreamAliasCommand extends CommandBase {
 
     @Override
     public void processCommand(ICommandSender sender, String[] args) {
-        DreamWalker.getLogger().info("alias {}", String.join(" ", args));
         if (!(sender instanceof EntityPlayerMP)) {
             Chat.sendChat(sender, "&cOnly for players");
             return;
@@ -58,13 +59,13 @@ public class DreamAliasCommand extends CommandBase {
 
         val subStingWithoutAlias = AliasHandler.subStingWithoutAlias(config, argAlias);
 
-        val playerData = DreamWalker.getInstance().getConfig().getPlayerAliasConfig().getData();
+        val map = DreamWalker.getInstance().getConfig().getPlayersAliasConfig();
         val globalData = DreamWalker.getInstance().getConfig().getGlobalAliasConfig().getData();
-        val playersAlias = playerData.getPlayersAlias();
-        val allAlias = globalData.getGlobalAlias();
+        val globalAlias = globalData.getGlobalAlias();
+        val helpAlias = new ArrayList<>(globalAlias);
 
         EntityPlayerMP target;
-        if (args.length > 2 && sender.canCommandSenderUseCommand(4, "")) {
+        if (help && args.length > 2 && sender.canCommandSenderUseCommand(4, "")) {
             target = getPlayer(sender, args[2]);
         } else {
             target = player;
@@ -74,22 +75,27 @@ public class DreamAliasCommand extends CommandBase {
 
         AtomicBoolean foundAlias = new AtomicBoolean(false);
 
-        playersAlias.forEach((playerName, aliases) -> {
+        map.forEach((playerName, jsonFile) -> {
             if (!playerName.equalsIgnoreCase(targetName)) return;
-            AliasHandler.foundAlias(sender, aliases, subStingWithoutAlias, foundAlias, help, target, args);
+            val playerAlias = jsonFile.getData().getAliases();
+            helpAlias.addAll(playerAlias);
+            AliasHandler.foundAlias(sender, playerAlias, subStingWithoutAlias, foundAlias, help, target, args);
         });
 
         if (!foundAlias.get()) {
-            AliasHandler.foundAlias(sender, allAlias, subStingWithoutAlias, foundAlias, help, target, args);
+            AliasHandler.foundAlias(sender, globalAlias, subStingWithoutAlias, foundAlias, help, target, args);
         }
 
         if (!foundAlias.get()) {
-            val listUsageAlias = AliasHandler.listUsageAlias(playersAlias, targetName, allAlias);
+            val listUsageAlias = AliasHandler.listUsageAlias(helpAlias);
             Chat.sendChat(sender, "&cАлиас " + subStingWithoutAlias + " не найден");
             Chat.sendChat(sender, listUsageAlias);
         }
 
     }
-
+    @Override
+    public List addTabCompletionOptions(ICommandSender sender, String[] args) {
+        return args.length >= 1 ? getListOfStringsMatchingLastWord(args, MinecraftServer.getServer().getAllUsernames()) : null;
+    }
 
 }
