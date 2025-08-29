@@ -1,5 +1,3 @@
----
-
 # **DreamWalker**
 
 **DreamWalker** is a Minecraft Forge mod for **Minecraft 1.7.10**, designed to enhance chat interaction by introducing powerful features like **aliases**, **textual effects**, and support for **custom commands with delays**. It’s built for both players and administrators to support immersive gameplay, roleplay, and streamlined command usage.
