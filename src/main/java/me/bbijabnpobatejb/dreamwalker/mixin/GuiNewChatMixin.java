@@ -1,8 +1,6 @@
 package me.bbijabnpobatejb.dreamwalker.mixin;
 
 import com.google.common.collect.Lists;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
 import me.bbijabnpobatejb.dreamwalker.util.ChatFormatUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ChatLine;

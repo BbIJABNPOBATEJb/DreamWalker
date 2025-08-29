@@ -5,9 +5,10 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import me.bbijabnpobatejb.dreamwalker.alias.Alias;
+import me.bbijabnpobatejb.dreamwalker.alias.object.Alias;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 @Data
 @AllArgsConstructor

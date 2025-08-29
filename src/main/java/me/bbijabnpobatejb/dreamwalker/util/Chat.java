@@ -4,9 +4,7 @@ import lombok.experimental.UtilityClass;
 import lombok.val;
 import me.bbijabnpobatejb.dreamwalker.DreamWalker;
 import me.bbijabnpobatejb.dreamwalker.side.CommonProxy;
-import net.minecraft.client.Minecraft;
 import net.minecraft.command.ICommandSender;
-import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ChatComponentText;
 

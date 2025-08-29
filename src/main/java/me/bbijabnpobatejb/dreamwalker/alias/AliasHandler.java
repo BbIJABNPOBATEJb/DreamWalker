@@ -3,10 +3,14 @@ package me.bbijabnpobatejb.dreamwalker.alias;
 import lombok.experimental.UtilityClass;
 import lombok.val;
 import me.bbijabnpobatejb.dreamwalker.DreamWalker;
+import me.bbijabnpobatejb.dreamwalker.alias.object.Alias;
+import me.bbijabnpobatejb.dreamwalker.alias.object.RunCommand;
 import me.bbijabnpobatejb.dreamwalker.config.model.SimpleConfig;
 import me.bbijabnpobatejb.dreamwalker.packet.ClientMessagePacket;
+import me.bbijabnpobatejb.dreamwalker.scheduler.TickEventListener;
 import me.bbijabnpobatejb.dreamwalker.side.CommonProxy;
 import me.bbijabnpobatejb.dreamwalker.util.Chat;
+import me.bbijabnpobatejb.dreamwalker.util.PlayerUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -14,6 +18,7 @@ import net.minecraft.entity.player.EntityPlayerMP;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
@@ -45,6 +50,7 @@ public class AliasHandler {
         if (index == -1) return message;
         return message.substring(index + prefix.length());
     }
+
     public boolean handleSubmitChatMessage(String rawMessage) {
         val b = containsAlias(config, rawMessage);
 
@@ -59,7 +65,12 @@ public class AliasHandler {
         return b;
     }
 
-    public void sendMessageAtPlayer(EntityPlayerMP player, String message) {
+    public void sendMessageAtPlayer(UUID playerId, String message) {
+        val player = PlayerUtil.getPlayerFromUUID(playerId);
+        if (player == null) {
+            DreamWalker.getLogger().warn("Cant find player {}, for alias command {}", playerId, message);
+            return;
+        }
         DreamWalker.NETWORK.sendTo(new ClientMessagePacket(message), player);
     }
 
@@ -90,16 +101,21 @@ public class AliasHandler {
         } else {
             String argLine = args.length > 1 ? String.join(" ", Arrays.copyOfRange(args, 1, args.length)) : "";
 
-            List<String> processedCommands = new ArrayList<>();
+            List<RunCommand> processedCommands = new ArrayList<>();
 
-            for (String commandTemplate : alias.getRunCommands()) {
+            for (val runCommand : alias.getRunCommands()) {
                 val holder = CommonProxy.getConfig().getArgsHolder();
-                if (commandTemplate.contains(holder) && argLine.isEmpty()) continue;
-                processedCommands.add(commandTemplate.replace(holder, argLine));
+                val string = runCommand.getCommand();
+                if (string.contains(holder) && argLine.isEmpty()) continue;
+                val replace = string.replace(holder, argLine);
+                val delay = runCommand.getDelay();
+                processedCommands.add(new RunCommand(replace, delay));
             }
 
-            for (String command : processedCommands) {
-                sendMessageAtPlayer(target, command);
+            for (val runCommand : processedCommands) {
+                TickEventListener.runTask(() -> {
+                    sendMessageAtPlayer(target.getUniqueID(), runCommand.getCommand());
+                }, runCommand.getDelay());
             }
         }
     }

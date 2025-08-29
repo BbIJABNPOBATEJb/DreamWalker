@@ -3,7 +3,8 @@ package me.bbijabnpobatejb.dreamwalker.config.model;
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.experimental.FieldDefaults;
-import me.bbijabnpobatejb.dreamwalker.alias.Alias;
+import me.bbijabnpobatejb.dreamwalker.alias.object.Alias;
+import me.bbijabnpobatejb.dreamwalker.alias.object.RunCommand;
 
 import java.util.Arrays;
 import java.util.List;
@@ -13,8 +14,8 @@ import java.util.List;
 public class GlobalAliasConfig {
     List<Alias> globalAlias = Arrays.asList(
             new Alias("удача", "Удача", "+5 -2", Arrays.asList(
-                    "/say Удача",
-                    "/say {args}"
+                   new RunCommand( "/say Удача",10),
+                   new RunCommand( "/say {args}",0)
             ))
     );
 

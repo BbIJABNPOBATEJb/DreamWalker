@@ -2,8 +2,6 @@ package me.bbijabnpobatejb.dreamwalker.util;
 
 
 import lombok.experimental.UtilityClass;
-import lombok.val;
-import me.bbijabnpobatejb.dreamwalker.DreamWalker;
 import net.minecraft.util.EnumChatFormatting;
 
 import javax.annotation.Nullable;

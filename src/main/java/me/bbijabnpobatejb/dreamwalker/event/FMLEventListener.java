@@ -2,10 +2,6 @@ package me.bbijabnpobatejb.dreamwalker.event;
 
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.gameevent.PlayerEvent;
-import lombok.val;
-import me.bbijabnpobatejb.dreamwalker.DreamWalker;
-import me.bbijabnpobatejb.dreamwalker.packet.ClientConfigPacket;
-import me.bbijabnpobatejb.dreamwalker.side.CommonProxy;
 import net.minecraft.entity.player.EntityPlayerMP;
 
 import static me.bbijabnpobatejb.dreamwalker.side.CommonProxy.sendConfigToPlayer;

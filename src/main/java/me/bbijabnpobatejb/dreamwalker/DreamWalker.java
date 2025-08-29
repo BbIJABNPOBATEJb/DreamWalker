@@ -1,5 +1,7 @@
 package me.bbijabnpobatejb.dreamwalker;
 
+import cpw.mods.fml.common.Mod;
+import cpw.mods.fml.common.SidedProxy;
 import cpw.mods.fml.common.event.*;
 import cpw.mods.fml.common.network.simpleimpl.SimpleNetworkWrapper;
 import lombok.Getter;
@@ -9,8 +11,6 @@ import me.bbijabnpobatejb.dreamwalker.command.DreamWalkerCommand;
 import me.bbijabnpobatejb.dreamwalker.config.JsonHandler;
 import me.bbijabnpobatejb.dreamwalker.effects.EffectsCommand;
 import me.bbijabnpobatejb.dreamwalker.side.CommonProxy;
-import cpw.mods.fml.common.SidedProxy;
-import cpw.mods.fml.common.Mod;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 

@@ -1,12 +1,9 @@
 package me.bbijabnpobatejb.dreamwalker.cube;
 
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
 import lombok.experimental.UtilityClass;
 import lombok.val;
 import me.bbijabnpobatejb.dreamwalker.DreamWalker;
 import me.bbijabnpobatejb.dreamwalker.side.ClientProxy;
-import me.bbijabnpobatejb.dreamwalker.util.Chat;
 import me.bbijabnpobatejb.dreamwalker.util.StringUtil;
 import net.minecraft.client.Minecraft;
 

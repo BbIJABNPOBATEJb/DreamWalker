@@ -4,11 +4,8 @@ import lombok.val;
 import me.bbijabnpobatejb.dreamwalker.DreamWalker;
 import me.bbijabnpobatejb.dreamwalker.util.Chat;
 import net.minecraft.command.CommandBase;
-import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.command.WrongUsageException;
-import net.minecraft.util.ChatComponentText;
-import net.minecraft.util.EnumChatFormatting;
 
 import java.util.Arrays;
 import java.util.List;

@@ -5,14 +5,18 @@ import lombok.Getter;
 import lombok.experimental.FieldDefaults;
 import lombok.val;
 import me.bbijabnpobatejb.dreamwalker.DreamWalker;
-import me.bbijabnpobatejb.dreamwalker.alias.Alias;
+import me.bbijabnpobatejb.dreamwalker.alias.object.Alias;
+import me.bbijabnpobatejb.dreamwalker.alias.object.RunCommand;
 import me.bbijabnpobatejb.dreamwalker.config.model.GlobalAliasConfig;
 import me.bbijabnpobatejb.dreamwalker.config.model.PlayerAliasConfig;
 import me.bbijabnpobatejb.dreamwalker.config.model.SimpleConfig;
 
 import javax.annotation.Nullable;
 import java.io.File;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -40,7 +44,7 @@ public class JsonHandler implements IDataHandler {
         load();
     }
 
-   public void loadPlayers() {
+    public void loadPlayers() {
 
 
         // Создаём папку, если она не существует
@@ -61,10 +65,10 @@ public class JsonHandler implements IDataHandler {
             JsonFile<PlayerAliasConfig> json = createPlayerAliasJsonFile(playerName, new PlayerAliasConfig(
                     Arrays.asList(
                             new Alias("сила", "Сила", "+3",
-                                    Arrays.asList("/roll 1d20+3", "/roll {args}")
+                                    Arrays.asList(new RunCommand("/roll 1d20+3", 20), new RunCommand("/roll {args}", 0))
                             ),
                             new Alias("ловкость", "Ловкость", "+2",
-                                    Arrays.asList("/roll 1d20+3", "/roll {args}")
+                                    Arrays.asList(new RunCommand("%2d5+3", 20), new RunCommand("!{args}", 0))
                             )
                     )));
 

@@ -1,19 +1,18 @@
 package me.bbijabnpobatejb.dreamwalker.effects;
 
 import lombok.val;
-import me.bbijabnpobatejb.dreamwalker.DreamWalker;
 import me.bbijabnpobatejb.dreamwalker.util.Chat;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.command.WrongUsageException;
-import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.ChatComponentText;
 
 import java.util.*;
 
 public class EffectsCommand extends CommandBase {
-    static final Map<String, List<Effect>> effects = new HashMap<>();
+
+    // playerName → list of effects
+    private static final Map<String, List<Effect>> effects = new HashMap<>();
 
     @Override
     public String getCommandName() {
@@ -31,155 +30,148 @@ public class EffectsCommand extends CommandBase {
     }
 
     @Override
+    public int getRequiredPermissionLevel() {
+        return 0;
+    }
+    @Override
     public String getCommandUsage(ICommandSender sender) {
-        return "/eff [название] " +
-                "| /eff <игрок> \"название\" \"описание\" " +
-                "| /eff list <игрок>" +
-                "| /eff remove <ник> [название|all]";
+        if (sender.canCommandSenderUseCommand(4, "")) {
+            return "/effects | /effects help | " +
+                    "/effects <ник> list | " +
+                    "/effects <ник> set <название через _> <описание через _> | " +
+                    "/effects <ник> remove <name|all|*>";
+        }
+        return "/effects | /effects help";
     }
 
     @Override
     public void processCommand(ICommandSender sender, String[] args) {
         if (args.length == 0) {
-            if (sender instanceof EntityPlayerMP) {
-                val player = (EntityPlayerMP) sender;
-                val playerName = player.getCommandSenderName();
-
-                val effect = effects.getOrDefault(playerName, new ArrayList<>());
-
-                if (effect.isEmpty()) {
-                    Chat.sendChat(player, "&7У вас нет активных эффектов");
-                    return;
-                }
-
-                Chat.sendChat(player, "&aСписок ваших эффектов:");
-
-                effect.forEach(s ->
-                        player.addChatMessage(new ChatComponentText(" §f- " + s.getName())));
-            } else {
-                throw new WrongUsageException("Только игрок может использовать эту команду без параметров");
-            }
+            showSelfEffects(sender);
             return;
         }
 
-        val first = args[0];
 
-        if (args.length == 1) {
-            effectCommand(sender, first);
+
+        if (!sender.canCommandSenderUseCommand(4, "")) {
+            showSelfEffects(sender);
             return;
         }
-        if (sender.canCommandSenderUseCommand(4, "")) {
-            if (adminCommand(sender, args, first)) return;
+
+        if (args.length == 1 && args[0].equalsIgnoreCase("help")) {
+            showHelp(sender);
+            return;
+        }
+
+        if (args.length < 2) throw new WrongUsageException(getCommandUsage(sender));
+
+
+        String targetPlayer = args[0];
+        String action = args[1].toLowerCase();
+
+        switch (action) {
+            case "list":
+                showPlayerEffects(sender, targetPlayer);
+                return;
+            case "set":
+                if (args.length < 4)
+                    throw new WrongUsageException("/effects <ник> set <название через _> <описание через _>");
+                setEffect(sender, targetPlayer, args[2], args[3]);
+                return;
+            case "remove":
+                if (args.length < 3)
+                    throw new WrongUsageException("/effects <ник> remove <name|all|*>");
+                removeEffect(sender, targetPlayer, args[2]);
+                return;
         }
 
         throw new WrongUsageException(getCommandUsage(sender));
     }
 
-    void effectCommand(ICommandSender sender, String first) {
-        // /effects Порча
-        if (sender instanceof EntityPlayerMP) {
-            val player = (EntityPlayerMP) sender;
-            val playerName = player.getCommandSenderName();
-            val effect = effects.getOrDefault(playerName, new ArrayList<>());
+    private void showHelp(ICommandSender sender) {
+        Chat.sendChat(sender, "&e[Effects — команды администратора]");
+        Chat.sendMessage(sender, "&a/effects — посмотреть свои эффекты");
+        Chat.sendMessage(sender, "&a/effects <ник> list — посмотреть эффекты игрока");
+        Chat.sendMessage(sender, "&a/effects <ник> set <название> <описание> — установить/заменить эффект игроку");
+        Chat.sendMessage(sender, "&a/effects <ник> remove <название|all|*> — удалить эффект у игрока");
+        Chat.sendMessage(sender, "&a/effects help — показать это сообщение");
+    }
+    // ========= For Players ==========
 
-            Effect desc = effect.stream().filter(e -> e.getName().equalsIgnoreCase(first)).findFirst().orElse(null);
-            if (desc == null) {
-                Chat.sendChat(player, "&7У вас нет эффекта \"" + first + "\"");
-            } else {
-                Chat.sendChat(player, "&a" + desc.getName() + ": &f" + desc.getDescription());
-            }
-        } else {
-            throw new WrongUsageException("Только игрок может использовать эту команду таким образом");
+    private void showSelfEffects(ICommandSender player) {
+        String name = player.getCommandSenderName();
+        List<Effect> list = effects.getOrDefault(name, new ArrayList<>());
+        if (list.isEmpty()) {
+            Chat.sendChat(player, "&7У вас нету эффектов");
+            return;
         }
-        return;
+
+        Chat.sendChat(player, "&aСписок ваших эффектов:");
+        for (Effect effect : list) {
+            Chat.sendMessage(player, effect.toString());
+        }
     }
 
-    boolean adminCommand(ICommandSender sender, String[] args, String first) {
-        if (first.equalsIgnoreCase("remove")) {
-            return removeEffect(sender, args);
-        }
 
-        if (first.equalsIgnoreCase("list")) {
-            return listEffect(sender, args);
-        }
+    // ========== Admin ==========
 
-        if (args.length >= 3) {
-            return addEffect(sender, args);
-        }
-        return false;
-    }
-
-    boolean addEffect(ICommandSender sender, String[] args) {
-        // /effects <ник> "Название" "Описание"
-        String target = args[0];
-        String effectName = stripQuotes(args[1]);
-        String desc = joinAndStripQuotes(args, 2);
-
-        val effect = effects.getOrDefault(target, new ArrayList<>());
-        effect.add(new Effect(effectName, desc));
-        Chat.sendChat(sender, "&aЭффект \"" + effectName + "\" добавлен игроку " + target);
-
-        effects.put(target, effect);
-        return true;
-    }
-
-    boolean listEffect(ICommandSender sender, String[] args) {
-        if (args.length < 2) throw new WrongUsageException(getCommandUsage(sender));
-        String target = args[1];
-
-        val effect = effects.getOrDefault(target, new ArrayList<>());
-
-        if (effect.isEmpty()) {
+    private void showPlayerEffects(ICommandSender sender, String target) {
+        List<Effect> list = effects.getOrDefault(target, new ArrayList<>());
+        if (list.isEmpty()) {
             Chat.sendChat(sender, "&7У игрока " + target + " нету эффектов");
-        } else {
-            for (val v : effect) {
-                Chat.sendChat(sender, "&aСписок эффектов " + target + ":");
-
-                effect.forEach(s ->
-                        sender.addChatMessage(new ChatComponentText(" §f- " + v.getName())));
-            }
+            return;
         }
-        effects.put(target, effect);
-        return true;
+
+        Chat.sendChat(sender, "&aЭффекты игрока " + target + ":");
+        for (Effect effect : list) {
+            Chat.sendMessage(sender, effect.toString());
+        }
     }
 
-    boolean removeEffect(ICommandSender sender, String[] args) {
-        if (args.length < 3) throw new WrongUsageException(getCommandUsage(sender));
-        String target = args[1];
-        String key = args[2];
+    private void setEffect(ICommandSender sender, String player, String effectName, String description) {
+        List<Effect> list = effects.computeIfAbsent(player, k -> new ArrayList<>());
 
-        val effect = effects.getOrDefault(target, new ArrayList<>());
-        if (key.equalsIgnoreCase("all")) {
-            effect.clear();
-            Chat.sendChat(sender, "&cУдалены все эффекты игрока " + target);
+        // Replace if exists
+        list.removeIf(e -> e.getName().equalsIgnoreCase(effectName));
+        list.add(new Effect(effectName, description));
+
+        Chat.sendChat(sender, "&aЭффекты '" + effectName + "' | '" + description + "' установлен игроку " + player);
+    }
+
+    private void removeEffect(ICommandSender sender, String target, String arg) {
+        List<Effect> list = effects.get(target);
+        if (list == null || list.isEmpty()) {
+            Chat.sendChat(sender, "&7У игрока " + target + " нету эффектов");
+            return;
+        }
+
+        val effectName = arg.replace("_", " ");
+        if (effectName.equalsIgnoreCase("all") || effectName.equals("*")) {
+            list.clear();
+            Chat.sendChat(sender, "&bВсе эффекты удалены с игрока " + target);
         } else {
-            val found = effect.removeIf(e -> e.getName().equalsIgnoreCase(key));
-            if (found) {
-                Chat.sendChat(sender, "&cЭффект \"" + key + "\" удалён у " + target);
+            boolean removed = list.removeIf(e -> e.getName().equalsIgnoreCase(effectName));
+            if (removed) {
+                Chat.sendChat(sender, "&bЭффект '" + effectName + "' удалён с игрока " + target);
             } else {
-                Chat.sendChat(sender, "&7У игрока " + target + " нет такого эффекта");
+                Chat.sendChat(sender, "&cЭффект '" + effectName + "' не найден на игроке " + target);
             }
         }
-        effects.put(target, effect);
-        return true;
     }
 
+    // ========== Utils ==========
 
-    String stripQuotes(String s) {
-        if (s == null) return "";
-        return s.replaceAll("^\"|\"$", ""); // remove leading/trailing quotes
-    }
-
-    String joinAndStripQuotes(String[] args, int start) {
-        StringBuilder b = new StringBuilder();
-        for (int i = start; i < args.length; i++) {
-            b.append(args[i]).append(" ");
-        }
-        return stripQuotes(b.toString().trim());
-    }
 
     @Override
     public List addTabCompletionOptions(ICommandSender sender, String[] args) {
-        return args.length >= 1 ? getListOfStringsMatchingLastWord(args, MinecraftServer.getServer().getAllUsernames()) : null;
+        if (args.length == 1) {
+            return getListOfStringsMatchingLastWord(args, MinecraftServer.getServer().getAllUsernames());
+        }
+
+        if (args.length == 2 && sender.canCommandSenderUseCommand(4, "")) {
+            return getListOfStringsFromIterableMatchingLastWord(args, Arrays.asList("list", "set", "remove"));
+        }
+
+        return Collections.emptyList();
     }
 }

@@ -8,15 +8,12 @@ import cpw.mods.fml.relauncher.Side;
 import lombok.val;
 import me.bbijabnpobatejb.dreamwalker.DreamWalker;
 import me.bbijabnpobatejb.dreamwalker.config.model.SimpleConfig;
-import me.bbijabnpobatejb.dreamwalker.database.SQLiteManager;
 import me.bbijabnpobatejb.dreamwalker.event.FMLEventListener;
 import me.bbijabnpobatejb.dreamwalker.packet.ClientConfigPacket;
 import me.bbijabnpobatejb.dreamwalker.packet.ClientMessagePacket;
-import net.minecraft.client.Minecraft;
+import me.bbijabnpobatejb.dreamwalker.scheduler.TickEventListener;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.server.MinecraftServer;
-
-import java.io.File;
 
 import static me.bbijabnpobatejb.dreamwalker.DreamWalker.NETWORK;
 
@@ -26,8 +23,7 @@ public class CommonProxy {
         NETWORK.registerMessage(new ClientConfigPacket.Handler(), ClientConfigPacket.class, 1, Side.CLIENT);
 
         FMLCommonHandler.instance().bus().register(new FMLEventListener());
-
-
+        FMLCommonHandler.instance().bus().register(new TickEventListener());
     }
 
     public void init(FMLInitializationEvent event) {

@@ -2,6 +2,8 @@ package me.bbijabnpobatejb.dreamwalker.alias;
 
 import lombok.val;
 import me.bbijabnpobatejb.dreamwalker.DreamWalker;
+import me.bbijabnpobatejb.dreamwalker.alias.object.Alias;
+import me.bbijabnpobatejb.dreamwalker.alias.object.RunCommand;
 import me.bbijabnpobatejb.dreamwalker.config.JsonFile;
 import me.bbijabnpobatejb.dreamwalker.config.JsonHandler;
 import me.bbijabnpobatejb.dreamwalker.config.model.GlobalAliasConfig;
@@ -13,7 +15,10 @@ import net.minecraft.command.WrongUsageException;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.server.MinecraftServer;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 public class AliasCommand extends CommandBase {
 
@@ -41,7 +46,7 @@ public class AliasCommand extends CommandBase {
             String scope = args[0].toLowerCase();
             if (scope.equalsIgnoreCase("?")) {
                 handleAliasList(sender);
-            }  else if (sender.canCommandSenderUseCommand(4, "")) {
+            } else if (sender.canCommandSenderUseCommand(4, "")) {
                 handleAdminSender(sender, args, scope);
             }
         }
@@ -100,10 +105,10 @@ public class AliasCommand extends CommandBase {
         Chat.sendChat(sender, "&e[Alias System — команды администратора]");
         Chat.sendMessage(sender, "&a/alias ? — список доступных вам алиасов");
         Chat.sendMessage(sender, "&a/alias player <ник> list");
-        Chat.sendMessage(sender, "&a/alias player <ник> add <алиас> <название через _> <описание через _> <команды через ;>");
+        Chat.sendMessage(sender, "&a/alias player <ник> add <алиас> <название через _> <описание через _> <команда; задержка в тиках>");
         Chat.sendMessage(sender, "&a/alias player <ник> remove <алиас>");
         Chat.sendMessage(sender, "&a/alias global list");
-        Chat.sendMessage(sender, "&a/alias global add <алиас> <название через _> <описание через _> <команды через ;>");
+        Chat.sendMessage(sender, "&a/alias global add <алиас> <название через _> <описание через _> <команда; задержка в тиках>");
         Chat.sendMessage(sender, "&a/alias global remove <алиас>");
     }
 
@@ -118,16 +123,16 @@ public class AliasCommand extends CommandBase {
 
         if (action.equalsIgnoreCase("add")) {
             if (args.length < 7)
-                throw new WrongUsageException("/alias player <ник> add <алиас> <название через _> <описание через _> <команды через ;>");
+                throw new WrongUsageException("/alias player <ник> add <алиас> <название через _> <описание через _> <команда; задержка в тиках>");
             String aliasName = args[3];
             String title = args[4];
             String desc = args[5];
             String commandMerged = joinArgs(args, 6);
-            List<String> commands = Arrays.asList(commandMerged.split(";"));
+            List<RunCommand> commands = parseRunCommand(commandMerged);
 
             Alias alias = new Alias(aliasName, title, desc, commands);
             addAliasToPlayer(config, player, alias);
-            Chat.sendChat(sender, "&aАлиас '" + aliasName + "' добавлен для игрока " + player);
+            Chat.sendChat(sender, "&aАлиас &r'" + alias + "'&a добавлен для игрока " + player);
 
         } else if (action.equalsIgnoreCase("remove")) {
             if (args.length < 4) throw new WrongUsageException("/alias player <ник> remove <алиас>");
@@ -159,17 +164,17 @@ public class AliasCommand extends CommandBase {
         config.loadPlayers();
     }
 
-    private void removeAliasFromPlayer(JsonHandler config, String player, String alias, ICommandSender sender) {
+    private void removeAliasFromPlayer(JsonHandler config, String player, String aliasId, ICommandSender sender) {
         JsonFile<PlayerAliasConfig> file = config.getPlayersAliasConfig().get(player);
         if (file == null) {
             Chat.sendChat(sender, "&7У игрока " + player + " нет алиасов");
             return;
         }
 
-        boolean removed = file.getData().getAliases().removeIf(a -> a.getAlias().equalsIgnoreCase(alias));
+        boolean removed = file.getData().getAliases().removeIf(a -> a.getAlias().equalsIgnoreCase(aliasId));
         if (removed) {
             file.save();
-            Chat.sendChat(sender, "&bАлиас '" + alias + "' удалён у игрока " + player);
+            Chat.sendChat(sender, "&bАлиас '" + aliasId + "' удалён у игрока " + player);
             config.loadPlayers();
         } else {
             Chat.sendChat(sender, "&cАлиас не найден у игрока " + player);
@@ -200,19 +205,19 @@ public class AliasCommand extends CommandBase {
 
         if (action.equalsIgnoreCase("add")) {
             if (args.length < 6)
-                throw new WrongUsageException("/alias global add <алиас> <название через _> <описание через _> <команды через ;>");
+                throw new WrongUsageException("/alias global add <алиас> <название через _> <описание через _> <команда; задержка в тиках>");
             String aliasName = args[2];
             String title = args[3];
             String desc = args[4];
             String commandMerged = joinArgs(args, 5);
-            List<String> commands = Arrays.asList(commandMerged.split(";"));
+            List<RunCommand> commands = parseRunCommand(commandMerged);
 
             Alias alias = new Alias(aliasName, title, desc, commands);
             global.getGlobalAlias().removeIf(a -> a.getAlias().equalsIgnoreCase(aliasName));
             global.getGlobalAlias().add(alias);
             config.getGlobalAliasConfig().save();
 
-            Chat.sendChat(sender, "&aГлобальный алиас '" + aliasName + "' добавлен");
+            Chat.sendChat(sender, "&aГлобальный алиас добавлен &r'" + alias + "'");
 
         } else if (action.equalsIgnoreCase("remove")) {
             if (args.length < 3) throw new WrongUsageException("/alias global remove <алиас>");
@@ -220,7 +225,7 @@ public class AliasCommand extends CommandBase {
             boolean removed = global.getGlobalAlias().removeIf(a -> a.getAlias().equalsIgnoreCase(aliasName));
             if (removed) {
                 config.getGlobalAliasConfig().save();
-                Chat.sendChat(sender, "&bГлобальный алиас '" + aliasName + "' удалён");
+                Chat.sendChat(sender, "&bГлобальный алиас &r'" + aliasName + "' удалён");
             } else {
                 Chat.sendChat(sender, "&cГлобальный алиас не найден: " + aliasName);
             }
@@ -251,6 +256,28 @@ public class AliasCommand extends CommandBase {
             if (i != args.length - 1) builder.append(" ");
         }
         return builder.toString();
+    }
+
+    private List<RunCommand> parseRunCommand(String raw) {
+        List<RunCommand> list = new ArrayList<>();
+        if (raw == null || raw.trim().isEmpty()) return list;
+
+        String[] parts = raw.split(";");
+        for (int i = 0; i < parts.length; i += 2) {
+            String cmd = parts[i].trim();
+            long delay = 0;
+
+            if (i + 1 < parts.length) {
+                try {
+                    delay = Long.parseLong(parts[i + 1].trim());
+                } catch (NumberFormatException ignored) {
+                }
+            }
+
+            list.add(new RunCommand(cmd, delay));
+        }
+
+        return list;
     }
 
     @Override
