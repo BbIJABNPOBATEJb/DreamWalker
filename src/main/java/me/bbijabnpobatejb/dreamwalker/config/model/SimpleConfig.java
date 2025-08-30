@@ -12,7 +12,8 @@ public class SimpleConfig {
     String aliasPrefix = ";";
     String rollPrefix = "%";
     String argsHolder = "{args}";
-    String formatMessageRoll = "бросает ⚅ {ordinal}: {format} (&7{comment}&r)";
+    String formatMessageRoll = "бросает ⚅ {ordinal}: {format}";
+    String formatResultMessageRoll = " {result} (&7{comment}&r)";
     int rollCommentMaxChars = 16;
     String[] channelPrefixes = {"@", "-", "!"};
 

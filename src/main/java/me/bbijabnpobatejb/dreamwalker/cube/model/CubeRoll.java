@@ -24,10 +24,8 @@ public class CubeRoll {
         return terms.stream().mapToInt(CubeTerm::total).sum() + bonus;
     }
 
+
     public String format() {
-        return format(total());
-    }
-    public String format(int total) {
         StringBuilder sb = new StringBuilder();
         for (CubeTerm term : terms) {
             if (sb.length() > 0) sb.append(" + ");
@@ -36,7 +34,6 @@ public class CubeRoll {
         if (bonus != 0) {
             sb.append(" + ").append(bonus);
         }
-        sb.append(" = ").append(total);
         return sb.toString();
     }
 }

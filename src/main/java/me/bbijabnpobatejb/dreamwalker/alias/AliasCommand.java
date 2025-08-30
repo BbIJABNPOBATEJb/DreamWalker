@@ -32,7 +32,10 @@ public class AliasCommand extends CommandBase {
         val isAdmin = sender.canCommandSenderUseCommand(4, "");
         return isAdmin ? "/alias <?/help/player/global> ..." : "/alias ?";
     }
-
+    @Override
+    public boolean canCommandSenderUseCommand(ICommandSender sender) {
+        return true;
+    }
     @Override
     public int getRequiredPermissionLevel() {
         return 0;
