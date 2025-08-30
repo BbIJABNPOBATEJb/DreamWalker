@@ -56,7 +56,8 @@ public class RunAliasCommand extends CommandBase {
             return;
         }
 
-        val subStingWithoutAlias = AliasHandler.subStingWithoutAlias(config, argAlias);
+        val subStingWithoutAlias = AliasHandler.subStingWithoutChannel(config, argAlias);
+        val channel = AliasHandler.subStingChannel(config, argAlias);
 
         val map = DreamWalker.getInstance().getConfig().getPlayersAliasConfig();
         val globalData = DreamWalker.getInstance().getConfig().getGlobalAliasConfig().getData();
@@ -78,11 +79,11 @@ public class RunAliasCommand extends CommandBase {
             if (!playerName.equalsIgnoreCase(targetName)) return;
             val playerAlias = jsonFile.getData().getAliases();
             helpAlias.addAll(playerAlias);
-            AliasHandler.foundAlias(sender, playerAlias, subStingWithoutAlias, foundAlias, help, target, args);
+            AliasHandler.foundAlias(sender, playerAlias, subStingWithoutAlias, foundAlias, help, target, args,channel);
         });
 
         if (!foundAlias.get()) {
-            AliasHandler.foundAlias(sender, globalAlias, subStingWithoutAlias, foundAlias, help, target, args);
+            AliasHandler.foundAlias(sender, globalAlias, subStingWithoutAlias, foundAlias, help, target, args,channel);
         }
 
         if (!foundAlias.get()) {

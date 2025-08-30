@@ -11,7 +11,7 @@ import me.bbijabnpobatejb.dreamwalker.config.model.SimpleConfig;
 import me.bbijabnpobatejb.dreamwalker.event.FMLEventListener;
 import me.bbijabnpobatejb.dreamwalker.packet.ClientConfigPacket;
 import me.bbijabnpobatejb.dreamwalker.packet.ClientMessagePacket;
-import me.bbijabnpobatejb.dreamwalker.scheduler.TickEventListener;
+import me.bbijabnpobatejb.dreamwalker.scheduler.Scheduler;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.server.MinecraftServer;
 
@@ -23,7 +23,7 @@ public class CommonProxy {
         NETWORK.registerMessage(new ClientConfigPacket.Handler(), ClientConfigPacket.class, 1, Side.CLIENT);
 
         FMLCommonHandler.instance().bus().register(new FMLEventListener());
-        FMLCommonHandler.instance().bus().register(new TickEventListener());
+        FMLCommonHandler.instance().bus().register(new Scheduler());
     }
 
     public void init(FMLInitializationEvent event) {

@@ -13,13 +13,11 @@ import java.util.List;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class GlobalAliasConfig {
     List<Alias> globalAlias = Arrays.asList(
-            new Alias("удача", "Удача", "+5 -2", Arrays.asList(
-                   new RunCommand( "/say Удача",10),
-                   new RunCommand( "/say {args}",0)
+            new Alias(Arrays.asList("удача", "удч", "уд"), "Удача", "+5 -2", Arrays.asList(
+                    new RunCommand("/say Удача", 10),
+                    new RunCommand("/say {args}", 0)
             ))
     );
-
-
 
 
 }

@@ -10,6 +10,7 @@ import me.bbijabnpobatejb.dreamwalker.alias.RunAliasCommand;
 import me.bbijabnpobatejb.dreamwalker.command.DreamWalkerCommand;
 import me.bbijabnpobatejb.dreamwalker.config.JsonHandler;
 import me.bbijabnpobatejb.dreamwalker.effects.EffectsCommand;
+import me.bbijabnpobatejb.dreamwalker.scheduler.Scheduler;
 import me.bbijabnpobatejb.dreamwalker.side.CommonProxy;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -75,6 +76,7 @@ public class DreamWalker {
 
     @Mod.EventHandler
     public void serverStarting(FMLServerStoppingEvent event) {
+        Scheduler.reset();
 //        database.shutdown();
     }
 }

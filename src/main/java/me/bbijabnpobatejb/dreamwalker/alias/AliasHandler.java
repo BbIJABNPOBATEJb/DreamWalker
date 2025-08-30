@@ -7,10 +7,12 @@ import me.bbijabnpobatejb.dreamwalker.alias.object.Alias;
 import me.bbijabnpobatejb.dreamwalker.alias.object.RunCommand;
 import me.bbijabnpobatejb.dreamwalker.config.model.SimpleConfig;
 import me.bbijabnpobatejb.dreamwalker.packet.ClientMessagePacket;
-import me.bbijabnpobatejb.dreamwalker.scheduler.TickEventListener;
+import me.bbijabnpobatejb.dreamwalker.scheduler.Scheduler;
+import me.bbijabnpobatejb.dreamwalker.side.ClientProxy;
 import me.bbijabnpobatejb.dreamwalker.side.CommonProxy;
 import me.bbijabnpobatejb.dreamwalker.util.Chat;
 import me.bbijabnpobatejb.dreamwalker.util.PlayerUtil;
+import me.bbijabnpobatejb.dreamwalker.util.StringUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -20,7 +22,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.stream.Collectors;
 
 import static me.bbijabnpobatejb.dreamwalker.alias.RunAliasCommand.DREAM_ALIAS_COMMAND;
 import static me.bbijabnpobatejb.dreamwalker.side.ClientProxy.config;
@@ -31,30 +32,21 @@ public class AliasHandler {
 
 
     public boolean containsAlias(SimpleConfig config, String message) {
-        String msg = message.trim();
-
-        for (String p : config.getChannelPrefixes()) {
-            if (msg.startsWith(p + config.getAliasPrefix())) {
-                msg = msg.substring(p.length());
-                break;
-            }
-        }
-
-        return msg.startsWith(config.getAliasPrefix());
+        return StringUtil.containsPrefix(config, message, config.getAliasPrefix());
     }
 
-    public String subStingWithoutAlias(SimpleConfig config, String message) {
-        String prefix = config.getAliasPrefix();
-        int index = message.indexOf(prefix);
+    public String subStingWithoutChannel(SimpleConfig config, String message) {
+        return StringUtil.subStingWithoutChannel(message, config.getAliasPrefix());
+    }
 
-        if (index == -1) return message;
-        return message.substring(index + prefix.length());
+    public String subStingChannel(SimpleConfig config, String message) {
+        return StringUtil.subStingChannel(config, message, config.getAliasPrefix());
     }
 
     public boolean handleSubmitChatMessage(String rawMessage) {
-        val b = containsAlias(config, rawMessage);
+        val containsAlias = containsAlias(config, rawMessage);
 
-        if (b) {
+        if (containsAlias) {
             val command = "/" + DREAM_ALIAS_COMMAND + " " + rawMessage;
             DreamWalker.getLogger().info("alias command {}", command);
             val mc = Minecraft.getMinecraft();
@@ -62,7 +54,7 @@ public class AliasHandler {
             mc.thePlayer.sendChatMessage(command);
         }
 
-        return b;
+        return containsAlias;
     }
 
     public void sendMessageAtPlayer(UUID playerId, String message) {
@@ -77,24 +69,38 @@ public class AliasHandler {
     public void handleClientMessagePacket(String message) {
         val mc = Minecraft.getMinecraft();
         DreamWalker.getLogger().info("handlerClientMessagePacket {}", message);
-        mc.thePlayer.sendChatMessage(message);
-    }
-
-    public String listUsageAlias(List<Alias> allAlias) {
-        val allAliasString = allAlias.stream().map(Alias::getAlias).collect(Collectors.toList());
-        return "§cСписок доступных вам алиасов: " + String.join(", ", allAliasString);
-    }
-
-    public void foundAlias(ICommandSender sender, List<Alias> aliases, String subStingWithoutAlias, AtomicBoolean foundAlias, boolean help, EntityPlayerMP target, String[] args) {
-        for (Alias alias : aliases) {
-            if (!alias.getAlias().equalsIgnoreCase(subStingWithoutAlias)) continue;
-            foundAlias.set(true);
-            runAliasCommand(sender, alias, help, target, args);
-            return;
+        if (!ClientProxy.handleChatMessage(message)) {
+            mc.thePlayer.sendChatMessage(message);
         }
     }
 
-    public void runAliasCommand(ICommandSender sender, Alias alias, boolean help, EntityPlayerMP target, String[] args) {
+    public String listUsageAlias(List<Alias> allAlias) {
+        List<String> allAliasString = new ArrayList<>();
+        for (Alias alias : allAlias) {
+            allAliasString.addAll(alias.getAlias());
+        }
+        return "§cСписок доступных вам алиасов: " + String.join(", ", allAliasString);
+    }
+
+    public void foundAlias(ICommandSender sender, List<Alias> aliases, String subStingWithoutAlias, AtomicBoolean foundAlias, boolean help, EntityPlayerMP target, String[] args, String channel) {
+        for (Alias alias : aliases) {
+            boolean matched = false;
+            for (String s : alias.getAlias()) {
+                if (s.equalsIgnoreCase(subStingWithoutAlias)) {
+                    matched = true;
+                    break;
+                }
+            }
+
+            if (matched) {
+                foundAlias.set(true);
+                runAliasCommand(sender, alias, help, target, args, channel);
+                return;
+            }
+        }
+    }
+
+    public void runAliasCommand(ICommandSender sender, Alias alias, boolean help, EntityPlayerMP target, String[] args, String channel) {
         if (help) {
             val message = alias.getDisplayName() + " " + alias.getDescription() + " " + alias.getAlias();
             Chat.sendChat(sender, message);
@@ -113,9 +119,9 @@ public class AliasHandler {
             }
 
             for (val runCommand : processedCommands) {
-                TickEventListener.runTask(() -> {
-                    sendMessageAtPlayer(target.getUniqueID(), runCommand.getCommand());
-                }, runCommand.getDelay());
+                Scheduler.runTask(() ->
+                                sendMessageAtPlayer(target.getUniqueID(), channel + runCommand.getCommand()),
+                        runCommand.getDelay());
             }
         }
     }

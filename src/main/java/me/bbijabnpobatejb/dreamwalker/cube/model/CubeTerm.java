@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.ToString;
 import lombok.experimental.FieldDefaults;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,11 +18,35 @@ public class CubeTerm {
     List<Cube> rolled = new ArrayList<>();
 
     public CubeTerm(int count, int sides) {
+        this(count, sides, null);
+    }
+
+    public CubeTerm(int count, int sides, @Nullable List<Integer> overrides) {
         this.count = count;
         this.sides = sides;
+
         for (int i = 0; i < count; i++) {
-            int result = 1 + (int) (Math.random() * sides);
-            rolled.add(new Cube(sides, result));
+            int value;
+            if (overrides != null && !overrides.isEmpty()) {
+                int override;
+                if (overrides.size() == 1) {
+                    override = overrides.get(0); // единичное значение → всем
+                } else if (i < overrides.size()) {
+                    override = overrides.get(i);
+                } else {
+                    override = -1; // превышение длины → рандом
+                }
+
+                if (override > 0) {
+                    value = Math.max(1, Math.min(sides, override)); // clamp
+                } else {
+                    value = 1 + (int) (Math.random() * sides);
+                }
+            } else {
+                value = 1 + (int) (Math.random() * sides);
+            }
+
+            rolled.add(new Cube(sides, value));
         }
     }
 

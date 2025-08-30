@@ -6,25 +6,29 @@ import cpw.mods.fml.common.gameevent.TickEvent;
 import java.util.ArrayList;
 import java.util.List;
 
-public class TickEventListener {
+public class Scheduler {
 
-    static final List<Task> tasks = new ArrayList<>();
+    static final List<Task> serverTasks = new ArrayList<>();
 
     @SubscribeEvent
     public void on(TickEvent.ServerTickEvent event) {
         if (event.phase != TickEvent.Phase.END) return;
-        for (Task task : tasks) {
+        for (Task task : serverTasks) {
             if (task.getTickDealy() > 0) continue;
             task.getRunnable().run();
         }
-        tasks.removeIf(t -> t.getTickDealy() <= 0);
+        serverTasks.removeIf(t -> t.getTickDealy() <= 0);
 
-        for (Task task : tasks) {
+        for (Task task : serverTasks) {
             task.setTickDealy(task.getTickDealy() - 1);
         }
     }
 
     public static void runTask(Runnable runnable, long tickDealy) {
-        tasks.add(new Task(runnable, tickDealy));
+        serverTasks.add(new Task(runnable, tickDealy));
+    }
+
+    public static void reset() {
+        serverTasks.removeIf(t -> true);
     }
 }

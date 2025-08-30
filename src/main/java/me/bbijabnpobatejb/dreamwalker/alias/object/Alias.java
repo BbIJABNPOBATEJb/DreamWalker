@@ -12,12 +12,12 @@ import java.util.stream.Collectors;
 @Getter
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class Alias {
-    String alias;
+    List<String> alias;
     String displayName;
     String description;
     List<RunCommand> runCommands;
 
-    public Alias(String alias, String displayName, String description, List<RunCommand> runCommands) {
+    public Alias(List<String> alias, String displayName, String description, List<RunCommand> runCommands) {
         this.alias = alias;
         this.displayName = displayName.replace("_", " ");
         this.description = description.replace("_", " ");
@@ -43,7 +43,7 @@ public class Alias {
 
     public static String example() {
         val s = " &b|&r ";
-        return "&7 - &fАлиас" + s
+        return "&7 - &f[Алиасы]" + s
                 + "Имя" + s
                 + "Описание" + s
                 + " &6>&r " + String.join(" &6|&r ", new String[]{"команда 1 &7(задержка)&r", "команда 2 &7(задержка)&r"})

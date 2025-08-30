@@ -17,7 +17,6 @@ public class RollHandler {
     public boolean handleSubmitChatMessage(String rawMessage) {
         String msg = rawMessage.trim();
 
-        // Обработка префикса чата (например -%... или @%...)
         String prefix = "";
         for (String p : config.getChannelPrefixes()) {
             if (msg.startsWith(p + config.getRollPrefix())) {

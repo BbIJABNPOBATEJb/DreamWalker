@@ -11,21 +11,51 @@ import java.util.List;
 public class CubeParser {
     public CubeRoll parse(String input) {
         String expr = input.replaceAll("\\s", "").toLowerCase().replace("д", "d");
-
         List<CubeTerm> cubes = new ArrayList<>();
         int bonus = 0;
 
+        StringBuilder originalBuilder = new StringBuilder();
+        boolean first = true;
+
         for (String part : expr.split("\\+")) {
+            if (!first) originalBuilder.append("+");
+            first = false;
+
             if (part.contains("d")) {
-                String[] split = part.split("d");
-                int count = split[0].isEmpty() ? 1 : Integer.parseInt(split[0]);
-                int sides = Integer.parseInt(split[1]);
-                cubes.add(new CubeTerm(count, sides));
+                String dicePart = part;
+                String overrideStr = null;
+
+                if (part.contains("/")) {
+                    String[] split = part.split("/", 2);
+                    dicePart = split[0];
+                    overrideStr = split[1];
+                }
+
+                String[] splitDice = dicePart.split("d");
+                int count = splitDice[0].isEmpty() ? 1 : Integer.parseInt(splitDice[0]);
+                int sides = Integer.parseInt(splitDice[1]);
+
+                List<Integer> overrides = new ArrayList<>();
+                if (overrideStr != null) {
+                    for (String value : overrideStr.split(",")) {
+                        try {
+                            overrides.add(Integer.parseInt(value));
+                        } catch (NumberFormatException ignored) {
+                        }
+                    }
+                }
+
+                cubes.add(new CubeTerm(count, sides, overrides));
+                originalBuilder.append(dicePart); // без "/..."
             } else {
-                bonus += Integer.parseInt(part);
+                try {
+                    bonus += Integer.parseInt(part);
+                } catch (NumberFormatException ignored) {
+                }
+                originalBuilder.append(part);
             }
         }
 
-        return new CubeRoll(input, cubes, bonus);
+        return new CubeRoll(originalBuilder.toString(), cubes, bonus);
     }
 }
