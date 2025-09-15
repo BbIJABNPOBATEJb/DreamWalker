@@ -1,8 +1,6 @@
 package me.bbijabnpobatejb.dreamwalker.mixin;
 
 
-import me.bbijabnpobatejb.dreamwalker.alias.AliasHandler;
-import me.bbijabnpobatejb.dreamwalker.cube.RollHandler;
 import me.bbijabnpobatejb.dreamwalker.side.ClientProxy;
 import net.minecraft.client.gui.GuiChat;
 import org.spongepowered.asm.mixin.Mixin;
@@ -12,17 +10,17 @@ import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import static me.bbijabnpobatejb.dreamwalker.DreamWalker.MAX_CHAT_CHAR;
-import static me.bbijabnpobatejb.dreamwalker.side.ClientProxy.handleChatMessage;
 
 @Mixin(GuiChat.class)
 public abstract class GuiChatMixin {
 
     @Inject(method = "submitChatMessage", at = @At("HEAD"), cancellable = true)
     public void onSendChatMessage(String message, CallbackInfo ci) {
-        if (ClientProxy.handleChatMessage(message)) {
+        if (ClientProxy.handleChatMessage(message, true)) {
             ci.cancel();
         }
     }
+
     @ModifyArg(
             method = "initGui",
             at = @At(

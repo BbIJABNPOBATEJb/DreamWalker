@@ -17,5 +17,11 @@ public class SimpleConfig {
     int rollCommentMaxChars = 16;
     String[] channelPrefixes = {"@", "-", "!"};
 
-
+    String rollOutputFormat = "[%sд%d: %s]";
+    String rollDelimiter = ", ";
+    String rollColorMin = "&c";
+    String rollColorMax = "&a";
+    String rollColorNormal = "";
+    String rollColorReset = "&r";
+    String rollPlus = " + ";
 }

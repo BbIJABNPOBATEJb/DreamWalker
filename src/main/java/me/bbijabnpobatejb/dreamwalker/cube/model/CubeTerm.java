@@ -4,6 +4,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.ToString;
 import lombok.experimental.FieldDefaults;
+import me.bbijabnpobatejb.dreamwalker.config.model.SimpleConfig;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -54,18 +55,27 @@ public class CubeTerm {
         return rolled.stream().mapToInt(Cube::getResult).sum();
     }
 
-    public String format() {
+    public String format(SimpleConfig config) {
         StringBuilder sb = new StringBuilder();
-        sb.append(String.format("[%sд%d: ",
-                count, sides));
+        StringBuilder rollsFormatted = new StringBuilder();
 
         for (int i = 0; i < rolled.size(); i++) {
+            if (i > 0) rollsFormatted.append(config.getRollDelimiter());
+
             Cube cube = rolled.get(i);
-            if (i > 0) sb.append(", ");
-            String color = cube.isMin() ? "&c" : cube.isMax() ? "&a" : "";
-            sb.append(color).append(cube).append("&r");
+
+            String color = cube.isMin() ? config.getRollColorMin()
+                    : cube.isMax() ? config.getRollColorMax()
+                    : config.getRollColorNormal();
+
+            rollsFormatted.append(color).append(cube).append(config.getRollColorReset());
         }
-        sb.append("]");
+
+        sb.append(String.format(
+                config.getRollOutputFormat(),
+                count, sides, rollsFormatted.toString()
+        ));
+
         return sb.toString();
     }
 }

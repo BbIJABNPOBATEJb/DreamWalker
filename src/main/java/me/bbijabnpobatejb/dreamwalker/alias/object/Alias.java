@@ -15,11 +15,13 @@ public class Alias {
     List<String> alias;
     String displayName;
     String description;
+    boolean runRandomCommand;
     List<RunCommand> runCommands;
 
-    public Alias(List<String> alias, String displayName, String description, List<RunCommand> runCommands) {
+    public Alias(List<String> alias, String displayName, boolean runRandomCommand, String description, List<RunCommand> runCommands) {
         this.alias = alias;
         this.displayName = displayName.replace("_", " ");
+        this.runRandomCommand = runRandomCommand;
         this.description = description.replace("_", " ");
         this.runCommands = runCommands;
     }
@@ -31,7 +33,8 @@ public class Alias {
         return "&7 - &f" + alias + s
                 + displayName + s
                 + description + s
-                 + commands;
+                + runRandomCommand + s
+                + commands;
     }
 
     public String playerToString() {
@@ -46,6 +49,7 @@ public class Alias {
         return "&7 - &f[Алиасы]" + s
                 + "Имя" + s
                 + "Описание" + s
+                + "Случайная команда" + s
                 + " &6>&r " + String.join(" &6|&r ", new String[]{"команда 1 &7(задержка)&r", "команда 2 &7(задержка)&r"})
                 + " &r&7(Это пример)";
     }

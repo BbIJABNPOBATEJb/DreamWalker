@@ -11,7 +11,6 @@ import java.util.*;
 
 public class EffectsCommand extends CommandBase {
 
-    // playerName → list of effects
     private static final Map<String, List<Effect>> effects = new HashMap<>();
 
     @Override
@@ -131,11 +130,14 @@ public class EffectsCommand extends CommandBase {
     private void setEffect(ICommandSender sender, String player, String effectName, String description) {
         List<Effect> list = effects.computeIfAbsent(player, k -> new ArrayList<>());
 
-        // Replace if exists
-        list.removeIf(e -> e.getName().equalsIgnoreCase(effectName));
-        list.add(new Effect(effectName, description));
+        val effectNameSpace = effectName.replace("_", " ");
+        description = description.replace("_", " ");
 
-        Chat.sendChat(sender, "&aЭффекты '" + effectName + "' | '" + description + "' установлен игроку " + player);
+        // Replace if exists
+        list.removeIf(e -> e.getName().equalsIgnoreCase(effectNameSpace));
+        list.add(new Effect(effectNameSpace, description));
+
+        Chat.sendChat(sender, "&aЭффекты '" + effectNameSpace + "' | '" + description + "' установлен игроку " + player);
     }
 
     private void removeEffect(ICommandSender sender, String target, String arg) {

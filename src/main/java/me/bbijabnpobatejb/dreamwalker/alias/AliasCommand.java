@@ -30,12 +30,14 @@ public class AliasCommand extends CommandBase {
     @Override
     public String getCommandUsage(ICommandSender sender) {
         val isAdmin = sender.canCommandSenderUseCommand(4, "");
-        return isAdmin ? "/alias <?/help/player/global> ..." : "/alias ?";
+        return isAdmin ? "/alias <?/help/player/global> <add/remove/list/player>" : "/alias ?";
     }
+
     @Override
     public boolean canCommandSenderUseCommand(ICommandSender sender) {
         return true;
     }
+
     @Override
     public int getRequiredPermissionLevel() {
         return 0;
@@ -108,10 +110,10 @@ public class AliasCommand extends CommandBase {
         Chat.sendChat(sender, "&e[Alias System — команды администратора]");
         Chat.sendMessage(sender, "&a/alias ? — список доступных вам алиасов");
         Chat.sendMessage(sender, "&a/alias player <ник> list");
-        Chat.sendMessage(sender, "&a/alias player <ник> add <алиасы через ;> <название через _> <описание через _> <команда; задержка в тиках>");
+        Chat.sendMessage(sender, "&a/alias player <ник> add <алиасы через ;> <название через _> <описание через _> <выбор случайной команды true/false> <команда; задержка в тиках>");
         Chat.sendMessage(sender, "&a/alias player <ник> remove <алиас>");
         Chat.sendMessage(sender, "&a/alias global list");
-        Chat.sendMessage(sender, "&a/alias global add <алиасы через ;> <название через _> <описание через _> <команда; задержка в тиках>");
+        Chat.sendMessage(sender, "&a/alias global add <алиасы через ;> <название через _> <описание через _> <выбор случайной команды true/false> <команда; задержка в тиках>");
         Chat.sendMessage(sender, "&a/alias global remove <алиас>");
     }
 
@@ -125,16 +127,18 @@ public class AliasCommand extends CommandBase {
 
 
         if (action.equalsIgnoreCase("add")) {
-            if (args.length < 7)
-                throw new WrongUsageException("/alias player <ник> add <алиасы через ;> <название через _> <описание через _> <команда; задержка в тиках>");
-            String aliasName = args[3];
-            String title = args[4];
-            String desc = args[5];
-            String commandMerged = joinArgs(args, 6);
-            List<RunCommand> commands = parseRunCommand(commandMerged);
+            val start = 7;
+            if (args.length < start + 1)
+                throw new WrongUsageException("/alias player <ник> add <алиасы через ;> <название через _> <описание через _> <выбор случайной команды true/false> <команда; задержка в тиках>");
+            val aliasName = args[3];
+            val title = args[4];
+            val desc = args[5];
+            val isRandom = args[6];
+            val commandMerged = joinArgs(args, start);
+            val commands = parseRunCommand(commandMerged);
 
             val list = Arrays.asList(aliasName.split(";"));
-            Alias alias = new Alias(list, title, desc, commands);
+            val alias = new Alias(list, title, Boolean.parseBoolean(isRandom), desc, commands);
             addAliasToPlayer(config, player, alias);
             Chat.sendChat(sender, "&aАлиас &r'" + alias + "'&a добавлен для игрока " + player);
 
@@ -218,16 +222,18 @@ public class AliasCommand extends CommandBase {
         GlobalAliasConfig global = config.getGlobalAliasConfig().getData();
 
         if (action.equalsIgnoreCase("add")) {
-            if (args.length < 6)
-                throw new WrongUsageException("/alias global add <алиасы через ;> <название через _> <описание через _> <команда; задержка в тиках>");
-            String aliasName = args[2];
-            String title = args[3];
-            String desc = args[4];
-            String commandMerged = joinArgs(args, 5);
-            List<RunCommand> commands = parseRunCommand(commandMerged);
+            val start = 6;
+            if (args.length < start + 1)
+                throw new WrongUsageException("/alias global add <алиасы через ;> <название через _> <описание через _> <выбор случайной команды true/false> <команда; задержка в тиках>");
+            val aliasName = args[2];
+            val title = args[3];
+            val desc = args[4];
+            val isRandom = args[5];
+            val commandMerged = joinArgs(args, start);
+            val commands = parseRunCommand(commandMerged);
 
             val list = Arrays.asList(aliasName.split(";"));
-            Alias alias = new Alias(list, title, desc, commands);
+            Alias alias = new Alias(list, title, Boolean.parseBoolean(isRandom), desc, commands);
             global.getGlobalAlias().removeIf(a -> {
                 for (String s : a.getAlias()) {
                     if (s.equalsIgnoreCase(aliasName)) {

@@ -27,9 +27,9 @@ public class ClientProxy extends CommonProxy {
         super.postInit(event);
     }
 
-    public static boolean handleChatMessage(String message) {
+    public static boolean handleChatMessage(String message, boolean addToChatHistory) {
         try {
-            if (RollHandler.handleSubmitChatMessage(message)) {
+            if (RollHandler.handleSubmitChatMessage(message, addToChatHistory)) {
                 return true;
             }
             if (AliasHandler.handleSubmitChatMessage(message)) {

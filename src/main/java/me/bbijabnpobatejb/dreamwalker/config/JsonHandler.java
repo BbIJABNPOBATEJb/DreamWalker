@@ -64,10 +64,10 @@ public class JsonHandler implements IDataHandler {
             val playerName = "Player123";
             JsonFile<PlayerAliasConfig> json = createPlayerAliasJsonFile(playerName, new PlayerAliasConfig(
                     Arrays.asList(
-                            new Alias(Arrays.asList("сила"), "Сила", "+3",
+                            new Alias(Arrays.asList("сила"), "Сила", false, "+3",
                                     Arrays.asList(new RunCommand("/roll 1d20+3", 20), new RunCommand("/roll {args}", 0))
                             ),
-                            new Alias(Arrays.asList("ловкость", "лвк"), "Ловкость", "+2",
+                            new Alias(Arrays.asList("ловкость", "лвк"), "Ловкость", true, "+2",
                                     Arrays.asList(new RunCommand("%2d5+3", 20), new RunCommand("!{args}", 0))
                             )
                     )));

@@ -12,6 +12,7 @@ import me.bbijabnpobatejb.dreamwalker.side.ClientProxy;
 import me.bbijabnpobatejb.dreamwalker.side.CommonProxy;
 import me.bbijabnpobatejb.dreamwalker.util.Chat;
 import me.bbijabnpobatejb.dreamwalker.util.PlayerUtil;
+import me.bbijabnpobatejb.dreamwalker.util.RandomUtil;
 import me.bbijabnpobatejb.dreamwalker.util.StringUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.command.ICommandSender;
@@ -69,7 +70,7 @@ public class AliasHandler {
     public void handleClientMessagePacket(String message) {
         val mc = Minecraft.getMinecraft();
         DreamWalker.getLogger().info("handlerClientMessagePacket {}", message);
-        if (!ClientProxy.handleChatMessage(message)) {
+        if (!ClientProxy.handleChatMessage(message, false)) {
             mc.thePlayer.sendChatMessage(message);
         }
     }
@@ -109,13 +110,14 @@ public class AliasHandler {
 
             List<RunCommand> processedCommands = new ArrayList<>();
 
-            for (val runCommand : alias.getRunCommands()) {
-                val holder = CommonProxy.getConfig().getArgsHolder();
-                val string = runCommand.getCommand();
-                if (string.contains(holder) && argLine.isEmpty()) continue;
-                val replace = string.replace(holder, argLine);
-                val delay = runCommand.getDelay();
-                processedCommands.add(new RunCommand(replace, delay));
+            val runCommands = alias.getRunCommands();
+            if (alias.isRunRandomCommand() && !runCommands.isEmpty()) {
+                val runCommand = RandomUtil.getRandomElement(runCommands);
+                tryRunCommand(runCommand, argLine, processedCommands);
+            } else {
+                for (val runCommand : runCommands) {
+                    tryRunCommand(runCommand, argLine, processedCommands);
+                }
             }
 
             for (val runCommand : processedCommands) {
@@ -124,6 +126,14 @@ public class AliasHandler {
                         runCommand.getDelay());
             }
         }
+    }
+
+    private static void tryRunCommand(RunCommand runCommand, String argLine, List<RunCommand> processedCommands) {
+        val holder = CommonProxy.getConfig().getArgsHolder();
+        val string = runCommand.getCommand();
+        val replace = string.replace(holder, argLine);
+        val delay = runCommand.getDelay();
+        processedCommands.add(new RunCommand(replace, delay));
     }
 
 

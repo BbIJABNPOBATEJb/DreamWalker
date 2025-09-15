@@ -3,6 +3,8 @@ package me.bbijabnpobatejb.dreamwalker.cube.model;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.experimental.FieldDefaults;
+import lombok.val;
+import me.bbijabnpobatejb.dreamwalker.config.model.SimpleConfig;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,14 +27,15 @@ public class CubeRoll {
     }
 
 
-    public String format() {
+    public String format(SimpleConfig config) {
         StringBuilder sb = new StringBuilder();
+        val plus = config.getRollPlus();
         for (CubeTerm term : terms) {
-            if (sb.length() > 0) sb.append(" + ");
-            sb.append(term.format());
+            if (sb.length() > 0) sb.append(plus);
+            sb.append(term.format(config));
         }
         if (bonus != 0) {
-            sb.append(" + ").append(bonus);
+            sb.append(plus).append(bonus);
         }
         return sb.toString();
     }

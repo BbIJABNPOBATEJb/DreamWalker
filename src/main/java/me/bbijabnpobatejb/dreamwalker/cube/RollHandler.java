@@ -3,6 +3,8 @@ package me.bbijabnpobatejb.dreamwalker.cube;
 import lombok.experimental.UtilityClass;
 import lombok.val;
 import me.bbijabnpobatejb.dreamwalker.DreamWalker;
+import me.bbijabnpobatejb.dreamwalker.packet.ClientMessagePacket;
+import me.bbijabnpobatejb.dreamwalker.packet.ServerRollPacket;
 import me.bbijabnpobatejb.dreamwalker.util.StringUtil;
 import net.minecraft.client.Minecraft;
 
@@ -13,7 +15,7 @@ import static me.bbijabnpobatejb.dreamwalker.side.ClientProxy.config;
 @UtilityClass
 public class RollHandler {
 
-    public boolean handleSubmitChatMessage(String rawMessage) {
+    public boolean handleSubmitChatMessage(String rawMessage, boolean addToChatHistory) {
         String msg = rawMessage.trim();
 
         String prefix = "";
@@ -66,7 +68,7 @@ public class RollHandler {
         val messageRoll = StringUtil.applyPlaceholders(config.getFormatMessageRoll(),
                 new HashMap<String, String>() {{
                     put("ordinal", parsed.getOriginal());
-                    put("format", parsed.format());
+                    put("format", parsed.format(config));
                 }});
         val resultMessageRoll = StringUtil.applyPlaceholders(config.getFormatResultMessageRoll(),
                 new HashMap<String, String>() {{
@@ -79,14 +81,15 @@ public class RollHandler {
 
 
         DreamWalker.getLogger().info("send message: {}", message);
-        mc.ingameGUI.getChatGUI().addToSentMessages(rawMessage);
+        if (addToChatHistory) mc.ingameGUI.getChatGUI().addToSentMessages(rawMessage);
         mc.thePlayer.sendChatMessage(message);
 
         if (message.length() > DreamWalker.MAX_CHAT_CHAR) {
-
             DreamWalker.getLogger().info("send message: {}", resultMessageRoll);
             mc.thePlayer.sendChatMessage(resultMessageRoll);
         }
+
+        DreamWalker.NETWORK.sendToServer(new ServerRollPacket());
 
         return true;
     }
