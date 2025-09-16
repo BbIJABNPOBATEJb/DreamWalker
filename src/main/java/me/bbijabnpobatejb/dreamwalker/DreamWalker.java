@@ -6,7 +6,7 @@ import cpw.mods.fml.common.event.*;
 import cpw.mods.fml.common.network.simpleimpl.SimpleNetworkWrapper;
 import lombok.Getter;
 import me.bbijabnpobatejb.dreamwalker.alias.AliasCommand;
-import me.bbijabnpobatejb.dreamwalker.alias.RunAliasCommand;
+import me.bbijabnpobatejb.dreamwalker.alias.RunAliasHandler;
 import me.bbijabnpobatejb.dreamwalker.command.DreamWalkerCommand;
 import me.bbijabnpobatejb.dreamwalker.config.JsonHandler;
 import me.bbijabnpobatejb.dreamwalker.effects.EffectsCommand;
@@ -65,7 +65,6 @@ public class DreamWalker {
         config = new JsonHandler(modConfigurationDirectory, Reference.MOD_ID);
         event.registerServerCommand(new EffectsCommand());
         event.registerServerCommand(new DreamWalkerCommand());
-        event.registerServerCommand(new RunAliasCommand());
         event.registerServerCommand(new AliasCommand());
 
 //        File dbFile = new File(modConfigurationDirectory, "dreamwalker.db");

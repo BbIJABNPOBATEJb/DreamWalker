@@ -6,6 +6,7 @@ import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import me.bbijabnpobatejb.dreamwalker.alias.AliasHandler;
 import me.bbijabnpobatejb.dreamwalker.config.model.SimpleConfig;
 import me.bbijabnpobatejb.dreamwalker.cube.RollHandler;
+import me.bbijabnpobatejb.dreamwalker.effects.EffectHandler;
 
 public class ClientProxy extends CommonProxy {
 
@@ -33,6 +34,9 @@ public class ClientProxy extends CommonProxy {
                 return true;
             }
             if (AliasHandler.handleSubmitChatMessage(message)) {
+                return true;
+            }
+            if (EffectHandler.handleSubmitChatMessage(message)) {
                 return true;
             }
         } catch (Exception ignored) {

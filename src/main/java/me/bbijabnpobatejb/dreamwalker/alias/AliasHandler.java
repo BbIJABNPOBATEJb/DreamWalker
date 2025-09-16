@@ -7,6 +7,7 @@ import me.bbijabnpobatejb.dreamwalker.alias.object.Alias;
 import me.bbijabnpobatejb.dreamwalker.alias.object.RunCommand;
 import me.bbijabnpobatejb.dreamwalker.config.model.SimpleConfig;
 import me.bbijabnpobatejb.dreamwalker.packet.ClientMessagePacket;
+import me.bbijabnpobatejb.dreamwalker.packet.ServerRunAliasPacket;
 import me.bbijabnpobatejb.dreamwalker.scheduler.Scheduler;
 import me.bbijabnpobatejb.dreamwalker.side.ClientProxy;
 import me.bbijabnpobatejb.dreamwalker.side.CommonProxy;
@@ -24,7 +25,6 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static me.bbijabnpobatejb.dreamwalker.alias.RunAliasCommand.DREAM_ALIAS_COMMAND;
 import static me.bbijabnpobatejb.dreamwalker.side.ClientProxy.config;
 
 
@@ -48,11 +48,12 @@ public class AliasHandler {
         val containsAlias = containsAlias(config, rawMessage);
 
         if (containsAlias) {
-            val command = "/" + DREAM_ALIAS_COMMAND + " " + rawMessage;
-            DreamWalker.getLogger().info("alias command {}", command);
+            DreamWalker.NETWORK.sendToServer(new ServerRunAliasPacket(rawMessage));
+//            val command = "/" + DREAM_ALIAS_COMMAND + " " + rawMessage;
+            DreamWalker.getLogger().info("alias command {}", rawMessage);
             val mc = Minecraft.getMinecraft();
             mc.ingameGUI.getChatGUI().addToSentMessages(rawMessage);
-            mc.thePlayer.sendChatMessage(command);
+//            mc.thePlayer.sendChatMessage(rawMessage);
         }
 
         return containsAlias;
