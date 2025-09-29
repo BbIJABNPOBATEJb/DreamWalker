@@ -3,10 +3,19 @@ package me.bbijabnpobatejb.dreamwalker.cube;
 import lombok.experimental.UtilityClass;
 import lombok.val;
 import me.bbijabnpobatejb.dreamwalker.DreamWalker;
+import me.bbijabnpobatejb.dreamwalker.packet.ClientActionBarPacket;
+import me.bbijabnpobatejb.dreamwalker.packet.ClientConfigPacket;
 import me.bbijabnpobatejb.dreamwalker.packet.ClientMessagePacket;
 import me.bbijabnpobatejb.dreamwalker.packet.ServerRollPacket;
+import me.bbijabnpobatejb.dreamwalker.side.CommonProxy;
+import me.bbijabnpobatejb.dreamwalker.util.PlayerUtil;
 import me.bbijabnpobatejb.dreamwalker.util.StringUtil;
+import net.minecraft.block.BlockBed;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.resources.I18n;
+import net.minecraft.client.settings.GameSettings;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 
 import java.util.HashMap;
 
@@ -92,6 +101,26 @@ public class RollHandler {
         DreamWalker.NETWORK.sendToServer(new ServerRollPacket());
 
         return true;
+    }
+
+    public void serverHandlePacket(EntityPlayerMP sender) {
+        DreamWalker.getLogger().info("Player {} use roll", sender.getCommandSenderName());
+
+        val simpleConfig = CommonProxy.getConfig();
+        val radius = simpleConfig.getRollAnnounceRadius();
+        val nearbyPlayers = PlayerUtil.getNearbyPlayers(sender.getEntityWorld(), PlayerUtil.getEntityPos(sender), radius);
+
+        val message = StringUtil.applyPlaceholders(simpleConfig.getRollAnnounceMessage(),
+                new HashMap<String, String>() {{
+                    put("player", sender.getCommandSenderName());
+                }});
+
+        for (EntityPlayer player : nearbyPlayers) {
+            if (player instanceof EntityPlayerMP){
+                val playerMP = (EntityPlayerMP) player;
+                DreamWalker.NETWORK.sendTo(new ClientActionBarPacket(message), playerMP);
+            }
+        }
     }
 
 }

@@ -20,9 +20,10 @@ public class CommonProxy {
     public void preInit(FMLPreInitializationEvent event) {
         NETWORK.registerMessage(new ClientMessagePacket.Handler(), ClientMessagePacket.class, 0, Side.CLIENT);
         NETWORK.registerMessage(new ClientConfigPacket.Handler(), ClientConfigPacket.class, 1, Side.CLIENT);
-        NETWORK.registerMessage(new ServerRollPacket.Handler(), ServerRollPacket.class, 2, Side.SERVER);
-        NETWORK.registerMessage(new ServerRunAliasPacket.Handler(), ServerRunAliasPacket.class, 3, Side.SERVER);
-        NETWORK.registerMessage(new ServerListEffectPacket.Handler(), ServerListEffectPacket.class, 4, Side.SERVER);
+        NETWORK.registerMessage(new ClientActionBarPacket.Handler(), ClientActionBarPacket.class, 2, Side.CLIENT);
+        NETWORK.registerMessage(new ServerRollPacket.Handler(), ServerRollPacket.class, 3, Side.SERVER);
+        NETWORK.registerMessage(new ServerRunAliasPacket.Handler(), ServerRunAliasPacket.class, 4, Side.SERVER);
+        NETWORK.registerMessage(new ServerListEffectPacket.Handler(), ServerListEffectPacket.class, 5, Side.SERVER);
 
         FMLCommonHandler.instance().bus().register(new FMLEventListener());
         FMLCommonHandler.instance().bus().register(new Scheduler());

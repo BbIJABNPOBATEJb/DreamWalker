@@ -9,6 +9,11 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 import me.bbijabnpobatejb.dreamwalker.DreamWalker;
 import me.bbijabnpobatejb.dreamwalker.alias.AliasHandler;
+import me.bbijabnpobatejb.dreamwalker.cube.RollHandler;
+import me.bbijabnpobatejb.dreamwalker.util.PlayerUtil;
+import net.minecraft.entity.player.EntityPlayer;
+
+import java.util.List;
 
 @Getter
 @NoArgsConstructor
@@ -30,7 +35,7 @@ public class ServerRollPacket implements IMessage {
         @Override
         public IMessage onMessage(ServerRollPacket packet, MessageContext ctx) {
             val sender = ctx.getServerHandler().playerEntity;
-            DreamWalker.getLogger().info("Player {} use roll", sender.getCommandSenderName());
+            RollHandler.serverHandlePacket(sender);
             return null;
         }
     }

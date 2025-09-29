@@ -14,7 +14,9 @@ public class SimpleConfig {
     String argsHolder = "{args}";
     String formatMessageRoll = "бросает ⚅ {ordinal}: {format}";
     String formatResultMessageRoll = " {result} (&7{comment}&r)";
+    String rollAnnounceMessage = "Игрок {player} использует кубики";
     int rollCommentMaxChars = 16;
+    double rollAnnounceRadius  = 30.0;
     String[] channelPrefixes = {"@", "-", "!"};
 
     String rollOutputFormat = "[%sд%d: %s]";
