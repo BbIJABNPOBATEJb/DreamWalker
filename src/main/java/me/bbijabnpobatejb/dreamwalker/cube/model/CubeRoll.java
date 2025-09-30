@@ -30,12 +30,19 @@ public class CubeRoll {
     public String format(SimpleConfig config) {
         StringBuilder sb = new StringBuilder();
         val plus = config.getRollPlus();
+        boolean first = true;
         for (CubeTerm term : terms) {
-            if (sb.length() > 0) sb.append(plus);
+            if (!first) {
+                sb.append(term.getSign() == 1 ? " + " : " - ");
+            } else if (term.getSign() == -1) {
+                sb.append("-");
+            }
             sb.append(term.format(config));
+            first = false;
         }
+
         if (bonus != 0) {
-            sb.append(plus).append(bonus);
+            sb.append(bonus > 0 ? " + " : " - ").append(Math.abs(bonus));
         }
         return sb.toString();
     }

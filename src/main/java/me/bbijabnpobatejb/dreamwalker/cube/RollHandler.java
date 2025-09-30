@@ -2,6 +2,7 @@ package me.bbijabnpobatejb.dreamwalker.cube;
 
 import lombok.experimental.UtilityClass;
 import lombok.val;
+import lombok.var;
 import me.bbijabnpobatejb.dreamwalker.DreamWalker;
 import me.bbijabnpobatejb.dreamwalker.packet.ClientActionBarPacket;
 import me.bbijabnpobatejb.dreamwalker.packet.ClientConfigPacket;
@@ -79,11 +80,18 @@ public class RollHandler {
                     put("ordinal", parsed.getOriginal());
                     put("format", parsed.format(config));
                 }});
-        val resultMessageRoll = StringUtil.applyPlaceholders(config.getFormatResultMessageRoll(),
+        var resultMessageRoll = StringUtil.applyPlaceholders(config.getFormatResultMessageRoll(),
                 new HashMap<String, String>() {{
                     put("result", totalText);
-                    put("comment", finalComment);
                 }});
+
+        if (!finalComment.isEmpty()) {
+            val commentMessage = StringUtil.applyPlaceholders(config.getCommentMessageRoll(),
+                    new HashMap<String, String>() {{
+                        put("comment", finalComment);
+                    }});
+            resultMessageRoll += commentMessage;
+        }
 
 
         val message = prefix + messageRoll + resultMessageRoll;
@@ -116,7 +124,7 @@ public class RollHandler {
                 }});
 
         for (EntityPlayer player : nearbyPlayers) {
-            if (player instanceof EntityPlayerMP){
+            if (player instanceof EntityPlayerMP) {
                 val playerMP = (EntityPlayerMP) player;
                 DreamWalker.NETWORK.sendTo(new ClientActionBarPacket(message), playerMP);
             }

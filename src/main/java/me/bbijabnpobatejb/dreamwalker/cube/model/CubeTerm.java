@@ -16,15 +16,14 @@ import java.util.List;
 public class CubeTerm {
     int count;
     int sides;
+    int sign;
     List<Cube> rolled = new ArrayList<>();
 
-    public CubeTerm(int count, int sides) {
-        this(count, sides, null);
-    }
 
-    public CubeTerm(int count, int sides, @Nullable List<Integer> overrides) {
+    public CubeTerm(int count, int sides, int sign, @Nullable List<Integer> overrides) {
         this.count = count;
         this.sides = sides;
+        this.sign = sign;
 
         for (int i = 0; i < count; i++) {
             int value;
@@ -52,7 +51,7 @@ public class CubeTerm {
     }
 
     public int total() {
-        return rolled.stream().mapToInt(Cube::getResult).sum();
+        return sign * rolled.stream().mapToInt(Cube::getResult).sum();
     }
 
     public String format(SimpleConfig config) {

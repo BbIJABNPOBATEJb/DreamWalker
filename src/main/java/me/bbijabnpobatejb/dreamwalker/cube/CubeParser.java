@@ -19,30 +19,56 @@ public class CubeParser {
         StringBuilder originalBuilder = new StringBuilder();
         boolean allowOverrides = ClientProxy.clientIsAdmin;
 
-        // например: "2d10-5+1" → ["+2d10", "-5", "+1"]
         List<String> parts = getStrings(expr);
 
+        boolean first = true;
         for (String part : parts) {
-            originalBuilder.append(part);
-
             char sign = part.charAt(0);
             String body = part.substring(1);
 
             if (body.contains("d")) {
-                CubeTerm term = getCubeTerm(body, allowOverrides);
+                // разбор кубов
+                String dicePart = body;
+                String overrideStr = null;
+
+                if (allowOverrides && body.contains("/")) {
+                    String[] split = body.split("/", 2);
+                    dicePart = split[0]; // чистая часть для original
+                    overrideStr = split[1];
+                } else if (!allowOverrides && body.contains("/")) {
+                    dicePart = body.split("/", 2)[0];
+                }
+
+                CubeTerm term = buildCubeTerm(dicePart, overrideStr, sign, allowOverrides);
                 cubes.add(term);
 
-                // если минус перед кубами: вычитаем результат
-                if (sign == '-') {
-                    bonus -= term.total() * 2;
+
+                // Формируем original: без подкрутки, без лишнего '+'
+                if (!first) {
+                    originalBuilder.append(sign);
+                } else if (sign == '-') {
+                    originalBuilder.append('-');
                 }
+                originalBuilder.append(dicePart);
+
             } else {
+                // бонусы
+                int value = 0;
                 try {
-                    int value = Integer.parseInt(body);
-                    bonus += (sign == '-' ? -value : value);
+                    value = Integer.parseInt(body);
                 } catch (NumberFormatException ignored) {
                 }
+
+                bonus += (sign == '-' ? -value : value);
+
+                if (!first) {
+                    originalBuilder.append(sign);
+                } else if (sign == '-') {
+                    originalBuilder.append('-');
+                }
+                originalBuilder.append(body);
             }
+            first = false;
         }
 
         return new CubeRoll(originalBuilder.toString(), cubes, bonus);
@@ -71,18 +97,7 @@ public class CubeParser {
         return parts;
     }
 
-    CubeTerm getCubeTerm(String body, boolean allowOverrides) {
-        String dicePart = body;
-        String overrideStr = null;
-
-        if (allowOverrides && body.contains("/")) {
-            String[] split = body.split("/", 2);
-            dicePart = split[0];
-            overrideStr = split[1];
-        } else if (!allowOverrides && body.contains("/")) {
-            dicePart = body.split("/", 2)[0];
-        }
-
+    CubeTerm buildCubeTerm(String dicePart, String overrideStr, char sign, boolean allowOverrides) {
         String[] splitDice = dicePart.split("d");
         int count = splitDice[0].isEmpty() ? 1 : Integer.parseInt(splitDice[0]);
         int sides = Integer.parseInt(splitDice[1]);
@@ -97,8 +112,7 @@ public class CubeParser {
                 }
             }
         }
-
-        CubeTerm term = new CubeTerm(count, sides, overrides);
-        return term;
+        int signValue = sign == '-' ? -1 : 1;
+        return new CubeTerm(count, sides, signValue, overrides);
     }
 }
